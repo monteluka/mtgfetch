@@ -18,6 +18,7 @@ set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
-        lib/httplib.h)
+        lib/httplib.h
+        lib/json.hpp)
 
 target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto)

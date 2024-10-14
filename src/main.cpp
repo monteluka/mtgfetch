@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "../lib/httplib.h"
+#include "../lib/json.hpp"
 
 int main()
 {
@@ -11,8 +12,13 @@ int main()
     const httplib::Headers headers = {{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}};
     auto res = cli.Get("/cards/named?fuzzy=wrathful-raptors", headers);
 
-    std::cout << "HTTP status is: " << res->status;
-    std::cout << "\n\n" << res->body;
+    std::cout << "HTTP status is: " << res->status << '\n';
+
+    nlohmann::json cardInfo = nlohmann::json::parse(res->body);
+
+    for (auto& el : cardInfo.items()) {
+        std::cout << el.key() << " : " << el.value() << "\n";
+    }
 
     return 0;
 }
