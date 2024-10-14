@@ -1,7 +1,15 @@
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+
 #include <iostream>
+#include "../lib/httplib.h"
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
+    httplib::Client cli("http://cpp-httplib-server.yhirose.repl.co");
+
+    auto res = cli.Get("/hi");
+    res->status;
+    res->body;
+
     return 0;
 }
