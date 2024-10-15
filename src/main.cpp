@@ -8,32 +8,55 @@
 
 int main()
 {
-    httplib::Client cli("https://api.scryfall.com");
+    httplib::Client cli {"https://api.scryfall.com"};
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
-    const httplib::Headers headers = {{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}};
-    auto res = cli.Get("/cards/named?fuzzy=kogla-the-titan-ape", headers);
+    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
+    auto res {cli.Get("/cards/named?fuzzy=silverclad-ferocidons", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
+    // cannot be brace initialized
     nlohmann::json card = nlohmann::json::parse(res->body);
 
     std::vector<std::string> cardInformation {};
+    std::vector<std::string> manaSymbol {};
 
     loadInfo(cardInformation, card);
+    loadManaSymbol(manaSymbol, card);
 
-    for (const auto& sentence : cardInformation)
-        std::cout << sentence << std::endl;
+    const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
 
-    std::cout << "\n\n\n";
+    for (size_t i = 0; i < largestBuffer; i++)
+    {
+        if (i < manaSymbol.size())
+        {
+            std::cout << manaSymbol[i] << "   ";
+        }
+        else
+        {
+            std::cout << std::string(39, ' ');
+        }
 
-    for (auto& el : card.items()) {
-        std::cout << el.key() << " : " << el.value() << "\n";
+        if (i < cardInformation.size())
+        {
+            std::cout << cardInformation[i];
+        }
+
+        std::cout << '\n';
     }
 
-    std::cout << "\n\n\n";
 
-    std::cout << std::setw(4) << card << std::endl;
+    // std::cout << "\n\n\n";
+
+    // for (auto& el : card.items())
+    // {
+    // std::cout << el.key() << " : " << el.value() << "\n";
+    // }
+
+    // std::cout << "\n\n\n";
+
+    // std::cout << std::setw(4) << card << std::endl;
 
     return 0;
 }
