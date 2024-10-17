@@ -12,7 +12,7 @@ int main()
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=silverclad-ferocidons", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=zhulodok-void-gorger", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
@@ -23,7 +23,11 @@ int main()
     std::vector<std::string> manaSymbol {};
 
     loadInfo(cardInformation, card);
-    loadManaSymbol(manaSymbol, card);
+    if (!loadManaSymbol(manaSymbol, card))
+    {
+        std::cout << "ERROR LOADING MANA SYMBOL" << std::endl;
+        return -1;
+    }
 
     const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
 

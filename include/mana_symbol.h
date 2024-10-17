@@ -9,12 +9,16 @@ std::vector<std::string> getColorIdentity(const nlohmann::json& card);
 
 bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& card);
 
-bool singleSymbolPrint(std::vector<std::string>& manaSymbol,
-                       const std::vector<std::ifstream>& files,
-                       std::vector<std::ifstream>::iterator& currentFile);
+bool addSingleSymbol(std::vector<std::string>& manaSymbol,
+                     const std::vector<std::ifstream>& files,
+                     std::vector<std::ifstream>::iterator& currentFile);
 
-bool doubleSymbolPrint(std::vector<std::string>& manaSymbol,
-                       const std::vector<std::ifstream>& files,
-                       std::vector<std::ifstream>::iterator& currentFile);
+bool addDoubleSymbol(std::vector<std::string>& manaSymbol,
+                     const std::vector<std::ifstream>& files,
+                     std::vector<std::ifstream>::iterator& currentFile);
+
+bool addAllSymbols(std::vector<std::string>& manaSymbol,
+                   const std::vector<std::ifstream>& files,
+                   std::vector<std::ifstream>::iterator& firstFile);
 
 #endif //MANA_SYMBOL_H

@@ -43,18 +43,17 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& 
         }
     }
 
-    std::vector<std::ifstream>::iterator currentFile {files.begin()};
-
-    // for testing purposes
-    doubleSymbolPrint(manaSymbol, files, currentFile);
-    singleSymbolPrint(manaSymbol, files, currentFile);
+    if (std::vector<std::ifstream>::iterator firstFile {files.begin()}; !addAllSymbols(manaSymbol, files, firstFile))
+    {
+        return false;
+    }
 
     return true;
 }
 
-bool singleSymbolPrint(std::vector<std::string>& manaSymbol,
-                       const std::vector<std::ifstream>& files,
-                       std::vector<std::ifstream>::iterator& currentFile)
+bool addSingleSymbol(std::vector<std::string>& manaSymbol,
+                     const std::vector<std::ifstream>& files,
+                     std::vector<std::ifstream>::iterator& currentFile)
 {
     if (currentFile == files.end())
     {
@@ -80,9 +79,9 @@ bool singleSymbolPrint(std::vector<std::string>& manaSymbol,
     return true;
 }
 
-bool doubleSymbolPrint(std::vector<std::string>& manaSymbol,
-                       const std::vector<std::ifstream>& files,
-                       std::vector<std::ifstream>::iterator& currentFile)
+bool addDoubleSymbol(std::vector<std::string>& manaSymbol,
+                     const std::vector<std::ifstream>& files,
+                     std::vector<std::ifstream>::iterator& currentFile)
 {
     const std::vector<std::ifstream>::iterator nextFile {std::next(currentFile)};
     if (currentFile == files.end() || nextFile == files.end())
@@ -107,6 +106,46 @@ bool doubleSymbolPrint(std::vector<std::string>& manaSymbol,
         // remove constness of files vector to assign end of vector to iterator
         // files vector is not being modified at all
         currentFile = const_cast<std::vector<std::ifstream>&>(files).end();
+    }
+
+    return true;
+}
+
+bool addAllSymbols(std::vector<std::string>& manaSymbol,
+                   const std::vector<std::ifstream>& files,
+                   std::vector<std::ifstream>::iterator& firstFile)
+{
+    const int numberOfSymbols {static_cast<int>(files.size())};
+    if (numberOfSymbols == 0)
+    {
+        return false;
+    }
+
+    if (numberOfSymbols == 1)
+    {
+        if (!addSingleSymbol(manaSymbol, files, firstFile))
+        {
+            return false;
+        }
+    }
+
+    const int numberOfDoublePrints {numberOfSymbols / 2};
+    const int numberOfSinglePrints {numberOfSymbols % 2};
+
+    for (int i {0}; i < numberOfDoublePrints; i++)
+    {
+        if (!addDoubleSymbol(manaSymbol, files, firstFile))
+        {
+            return false;
+        }
+    }
+
+    for (int i {0}; i < numberOfSinglePrints; i++)
+    {
+        if (!addSingleSymbol(manaSymbol, files, firstFile))
+        {
+            return false;
+        }
     }
 
     return true;
