@@ -20,7 +20,6 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& 
         {'G', "green"},
         {'R', "red"},
         {'W', "white"},
-        {'C', "colorless"}
     };
 
     // choose regular or small symbol based on how many colors in identity
@@ -29,18 +28,28 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& 
 
     // make a list of open files that are needed
     std::vector<std::ifstream> files {};
-    for (const std::string& color : colorIdentity)
+    if (size > 0)
     {
-        if (auto it = colorFile.find(color[0]); it != colorFile.end())
+        for (const std::string& color : colorIdentity)
         {
-            std::string filename {"../images/ascii/" + it->second + extension};
-            std::ifstream asciiArt {filename, std::ifstream::in};
-            if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
+            if (auto it = colorFile.find(color[0]); it != colorFile.end())
+            {
+                std::string filename {"../images/ascii/" + it->second + extension};
+                std::ifstream asciiArt {filename, std::ifstream::in};
+                if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
+            }
+            else
+            {
+                return false;
+            }
         }
-        else
-        {
-            return false;
-        }
+    }
+    else
+    {
+        // if colorIdentity is empty, that means the card is colorless
+        std::string filename {"../images/ascii/colorless.txt"};
+        std::ifstream asciiArt {filename, std::ifstream::in};
+        if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
     }
 
     if (std::vector<std::ifstream>::iterator firstFile {files.begin()}; !addAllSymbols(manaSymbol, files, firstFile))
@@ -116,19 +125,25 @@ bool addAllSymbols(std::vector<std::string>& manaSymbol,
                    std::vector<std::ifstream>::iterator& firstFile)
 {
     const int numberOfSymbols {static_cast<int>(files.size())};
+
+    // there are no symbols to display - error
     if (numberOfSymbols == 0)
     {
         return false;
     }
 
+    // there is only one single symbol to display
     if (numberOfSymbols == 1)
     {
         if (!addSingleSymbol(manaSymbol, files, firstFile))
         {
             return false;
         }
+        // adding the single symbol was a success
+        return true;
     }
 
+    // only get here if we have multiple symbols to add to the manaSymbol vector
     const int numberOfDoublePrints {numberOfSymbols / 2};
     const int numberOfSinglePrints {numberOfSymbols % 2};
 
