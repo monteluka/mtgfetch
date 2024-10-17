@@ -12,7 +12,7 @@ int main()
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=zhulodok-void-gorger", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=indoraptor-perfect-hybrid", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
@@ -39,7 +39,7 @@ int main()
         }
         else
         {
-            std::cout << std::string(39, ' ');
+            std::cout << ((manaSymbol.size() > 19) ? std::string(43, ' ') : std::string(39, ' '));
         }
 
         if (i < cardInformation.size())
