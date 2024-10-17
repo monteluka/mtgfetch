@@ -3,14 +3,14 @@
 #include <unordered_map>
 #include <utility>
 
-std::vector<std::string> getColorIdentity(nlohmann::json& card)
+std::vector<std::string> getColorIdentity(const nlohmann::json& card)
 {
     std::vector<std::string> colorIdentity {};
     for (const auto& color : card["color_identity"]) colorIdentity.push_back(color);
     return colorIdentity;
 }
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, nlohmann::json& card)
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& card)
 {
     std::vector<std::string> colorIdentity {getColorIdentity(card)};
 
@@ -43,11 +43,70 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, nlohmann::json& card)
         }
     }
 
-    // load the symbol from the first file into manaSymbol buffer
-    // for testing
-    for (std::string line; std::getline(files[0], line);)
+    std::vector<std::ifstream>::iterator currentFile {files.begin()};
+
+    // for testing purposes
+    doubleSymbolPrint(manaSymbol, files, currentFile);
+    singleSymbolPrint(manaSymbol, files, currentFile);
+
+    return true;
+}
+
+bool singleSymbolPrint(std::vector<std::string>& manaSymbol,
+                       const std::vector<std::ifstream>& files,
+                       std::vector<std::ifstream>::iterator& currentFile)
+{
+    if (currentFile == files.end())
     {
-        manaSymbol.push_back(line);
+        return false;
+    }
+
+    if (currentFile != files.begin())
+    {
+        for (std::string line; std::getline(*currentFile, line);)
+        {
+            manaSymbol.push_back(std::string(9, ' ') + line);
+        }
+    }
+    else
+    {
+        for (std::string line; std::getline(*currentFile, line);)
+        {
+            manaSymbol.push_back(line);
+        }
+    }
+
+    ++currentFile;
+    return true;
+}
+
+bool doubleSymbolPrint(std::vector<std::string>& manaSymbol,
+                       const std::vector<std::ifstream>& files,
+                       std::vector<std::ifstream>::iterator& currentFile)
+{
+    const std::vector<std::ifstream>::iterator nextFile {std::next(currentFile)};
+    if (currentFile == files.end() || nextFile == files.end())
+    {
+        return false;
+    }
+
+    std::string manaSymbol1 {};
+    std::string manaSymbol2 {};
+
+    while (std::getline(*currentFile, manaSymbol1) && std::getline(*nextFile, manaSymbol2))
+    {
+        manaSymbol.push_back(manaSymbol1 + manaSymbol2);
+    }
+
+    if (std::next(nextFile) != files.end())
+    {
+        currentFile += 2;
+    }
+    else
+    {
+        // remove constness of files vector to assign end of vector to iterator
+        // files vector is not being modified at all
+        currentFile = const_cast<std::vector<std::ifstream>&>(files).end();
     }
 
     return true;

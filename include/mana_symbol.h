@@ -5,8 +5,16 @@
 #include <vector>
 #include "../lib/json.hpp"
 
-std::vector<std::string> getColorIdentity(nlohmann::json& card);
+std::vector<std::string> getColorIdentity(const nlohmann::json& card);
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, nlohmann::json& card);
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& card);
+
+bool singleSymbolPrint(std::vector<std::string>& manaSymbol,
+                       const std::vector<std::ifstream>& files,
+                       std::vector<std::ifstream>::iterator& currentFile);
+
+bool doubleSymbolPrint(std::vector<std::string>& manaSymbol,
+                       const std::vector<std::ifstream>& files,
+                       std::vector<std::ifstream>::iterator& currentFile);
 
 #endif //MANA_SYMBOL_H
