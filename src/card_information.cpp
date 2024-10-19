@@ -1,10 +1,54 @@
 #include "../include/card_information.h"
+#include <iostream>
+#include <sys/stat.h>
 
 bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
 {
-    information.push_back("Name: " + std::string {card["name"]});
-    information.push_back("Mana Cost: " + std::string {card["mana_cost"]});
-    information.push_back("Type: " + std::string {card["type_line"]});
-    information.push_back("Description: " + std::string {card["oracle_text"]});
+    for (auto& el : card.items())
+    {
+        std::string info {};
+        info += el.key() + ": ";
+        if (el.value().is_string())
+        {
+            size_t beginning {}, position {}, count {};
+            std::string value {el.value()};
+            bool firstInstance {true};
+            for (const char& character : value)
+            {
+                if (character == '\n')
+                {
+                    if (!firstInstance)
+                    {
+                        information.push_back(std::string(info.size(), ' ') + value.substr(beginning, count));
+                    }
+                    else
+                    {
+                        information.push_back(info + value.substr(beginning, count));
+                        firstInstance = false;
+                    }
+                    beginning = position + 1;
+                    count = -1;
+                }
+                ++count;
+                ++position;
+            }
+            firstInstance
+                ? information.push_back(info + value.substr(beginning, count))
+                : information.push_back(std::string(info.size(), ' ') + value.substr(beginning, count));
+        }
+        else if (el.value().is_boolean())
+        {
+            info += el.value() ? "True" : "False";
+            information.push_back(info);
+        }
+        else if (el.value().is_number())
+        {
+            info += std::to_string(el.value().get<int>());
+            information.push_back(info);
+        }
+        else if (el.value().is_object()) {}
+        else {}
+    }
+
     return true;
 }
