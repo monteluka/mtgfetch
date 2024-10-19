@@ -46,7 +46,30 @@ bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
             info += std::to_string(el.value().get<int>());
             information.push_back(info);
         }
-        else if (el.value().is_object()) {}
+        else if (el.value().is_array())
+        {
+            if (el.value()[0].is_number())
+            {
+                for (auto& element : el.value())
+                {
+                    info += std::to_string(element.get<int>()) + ", ";
+                }
+            }
+            else
+            {
+                for (auto& element : el.value())
+                {
+                    info += element;
+                    info += ", ";
+                }
+            }
+            info.pop_back();
+            info.pop_back();
+        }
+        else if (el.value().is_object())
+        {
+            loadInfo(information, el.value());
+        }
         else {}
     }
 
