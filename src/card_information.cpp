@@ -78,6 +78,10 @@ bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
                 info.pop_back();
                 information.push_back(info);
             }
+            else if (el.value()[0].is_null())
+            {
+                // do nothing
+            }
             else
             {
                 information.push_back(info);
@@ -86,8 +90,12 @@ bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
         }
         else if (el.value().is_object())
         {
-            information.push_back(info);
-            loadInfo(information, el.value());
+            // if first item in el.value() object is null then skip
+            if (auto firstItem {el.value().begin()}; !firstItem.value().is_null())
+            {
+                information.push_back(info);
+                loadInfo(information, el.value());
+            }
         }
         else {}
     }

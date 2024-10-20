@@ -6,7 +6,8 @@
 std::vector<std::string> getColorIdentity(const nlohmann::json& card)
 {
     std::vector<std::string> colorIdentity {};
-    for (const auto& color : card["color_identity"]) colorIdentity.push_back(color);
+    if (card["color_identity"][0].is_null()) colorIdentity.emplace_back("C");
+    else for (const auto& color : card["color_identity"]) colorIdentity.push_back(color);
     return colorIdentity;
 }
 
@@ -20,6 +21,7 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& 
         {'G', "green"},
         {'R', "red"},
         {'W', "white"},
+        {'C', "colorless"},
     };
 
     // choose regular or small symbol based on how many colors in identity
@@ -28,28 +30,18 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& 
 
     // make a list of open files that are needed
     std::vector<std::ifstream> files {};
-    if (size > 0)
+    for (const std::string& color : colorIdentity)
     {
-        for (const std::string& color : colorIdentity)
+        if (auto it = colorFile.find(color[0]); it != colorFile.end())
         {
-            if (auto it = colorFile.find(color[0]); it != colorFile.end())
-            {
-                std::string filename {"../images/ascii/" + it->second + extension};
-                std::ifstream asciiArt {filename, std::ifstream::in};
-                if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
-            }
-            else
-            {
-                return false;
-            }
+            std::string filename {"../images/ascii/" + it->second + extension};
+            std::ifstream asciiArt {filename, std::ifstream::in};
+            if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
         }
-    }
-    else
-    {
-        // if colorIdentity is empty, that means the card is colorless
-        std::string filename {"../images/ascii/colorless.txt"};
-        std::ifstream asciiArt {filename, std::ifstream::in};
-        if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
+        else
+        {
+            return false;
+        }
     }
 
     if (std::vector<std::ifstream>::iterator firstFile {files.begin()}; !addAllSymbols(manaSymbol, files, firstFile))
@@ -71,14 +63,14 @@ bool addSingleSymbol(std::vector<std::string>& manaSymbol,
 
     if (currentFile != files.begin())
     {
-        for (std::string line; std::getline(*currentFile, line);)
+        for (std::string line {}; std::getline(*currentFile, line);)
         {
             manaSymbol.push_back(std::string(9, ' ') + line + std::string(11, ' '));
         }
     }
     else
     {
-        for (std::string line; std::getline(*currentFile, line);)
+        for (std::string line {}; std::getline(*currentFile, line);)
         {
             manaSymbol.push_back(line);
         }
