@@ -4,10 +4,19 @@
 
 bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
 {
+    static int depth {};
+    ++depth;
     for (auto& el : card.items())
     {
         std::string info {};
-        info += el.key() + ": ";
+        if (depth < 2)
+        {
+            info += el.key() + ": ";
+        }
+        else
+        {
+            info += std::string(2 * depth, ' ') + el.key() + ": ";
+        }
         if (el.value().is_string())
         {
             size_t beginning {}, position {}, count {};
@@ -54,24 +63,36 @@ bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
                 {
                     info += std::to_string(element.get<int>()) + ", ";
                 }
+                info.pop_back();
+                info.pop_back();
+                information.push_back(info);
             }
-            else
+            else if (el.value()[0].is_string())
             {
                 for (auto& element : el.value())
                 {
                     info += element;
                     info += ", ";
                 }
+                info.pop_back();
+                info.pop_back();
+                information.push_back(info);
             }
-            info.pop_back();
-            info.pop_back();
+            else
+            {
+                information.push_back(info);
+                loadInfo(information, el.value());
+            }
         }
         else if (el.value().is_object())
         {
+            information.push_back(info);
             loadInfo(information, el.value());
         }
         else {}
     }
+
+    --depth;
 
     return true;
 }
