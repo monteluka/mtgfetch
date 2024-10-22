@@ -3,11 +3,11 @@
 
 #include <string>
 #include <vector>
-#include "../lib/json.hpp"
+#include "../lib/rapidyaml-0.7.2.hpp"
 
-std::vector<std::string> getColorIdentity(const nlohmann::json& card);
+std::vector<std::string> getColorIdentity(const ryml::Tree& card);
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& card);
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card);
 
 bool addSingleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,
