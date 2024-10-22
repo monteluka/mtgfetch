@@ -48,6 +48,11 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
         }
         else if (el.is_seq())
         {
+            if (el.num_children() == 0)
+            {
+                continue;
+            }
+
             if (el.first_child().is_val())
             {
                 for (const auto& element : el.children())
