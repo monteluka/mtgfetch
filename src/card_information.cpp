@@ -1,26 +1,27 @@
 #include "../include/card_information.h"
-#include <iostream>
-#include <sys/stat.h>
 
-bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
+bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
 {
     static int depth {};
     ++depth;
-    for (auto& el : card.items())
+
+    c4::yml::ConstNodeRef root {card.crootref()};
+
+    for (const auto& el : root.children())
     {
         std::string info {};
         if (depth < 2)
         {
-            info += el.key() + ": ";
+            info += std::string(el.key().str, el.key().len) + ": ";
         }
         else
         {
-            info += std::string(2 * depth, ' ') + el.key() + ": ";
+            info += std::string(2 * depth, ' ') + std::string(el.key().str, el.key().len) + ": ";
         }
-        if (el.value().is_string())
+        if (el.is_keyval())
         {
             size_t beginning {}, position {}, count {};
-            std::string value {el.value()};
+            std::string value {std::string(el.val().str, el.val().len)};
             bool firstInstance {true};
             for (const char& character : value)
             {
@@ -45,56 +46,58 @@ bool loadInfo(std::vector<std::string>& information, nlohmann::json& card)
                 ? information.push_back(info + value.substr(beginning, count))
                 : information.push_back(std::string(info.size(), ' ') + value.substr(beginning, count));
         }
-        else if (el.value().is_boolean())
+        else if (el.is_seq())
         {
-            info += el.value() ? "True" : "False";
-            information.push_back(info);
-        }
-        else if (el.value().is_number())
-        {
-            info += std::to_string(el.value().get<int>());
-            information.push_back(info);
-        }
-        else if (el.value().is_array())
-        {
-            if (el.value()[0].is_number())
+            if (el.first_child().is_val())
             {
-                for (auto& element : el.value())
+                for (const auto& element : el.children())
                 {
-                    info += std::to_string(element.get<int>()) + ", ";
+                    info += std::string(element.val().str, element.val().len) + ", ";
                 }
                 info.pop_back();
                 info.pop_back();
                 information.push_back(info);
-            }
-            else if (el.value()[0].is_string())
-            {
-                for (auto& element : el.value())
-                {
-                    info += element;
-                    info += ", ";
-                }
-                info.pop_back();
-                info.pop_back();
-                information.push_back(info);
-            }
-            else if (el.value()[0].is_null())
-            {
-                // do nothing
             }
             else
             {
                 information.push_back(info);
-                loadInfo(information, el.value());
+                int partNumber {0};
+                for (const auto& element : el.children())
+                {
+                    if (element.num_children() > 0)
+                    {
+                        c4::yml::Tree new_tree {};
+                        c4::yml::NodeRef treeRoot {new_tree.rootref()};
+                        treeRoot |= c4::yml::MAP;
+
+                        std::string partString {"Part " + std::to_string(++partNumber)};
+                        c4::yml::NodeRef part {treeRoot[c4::to_csubstr(partString)]};
+                        part |= c4::yml::MAP;
+
+                        for (const auto& child : element.children())
+                        {
+                            part[child.key()] << child.val();
+                        }
+                        loadInfo(information, new_tree);
+                    }
+                }
             }
         }
-        else if (el.value().is_object())
+        else if (el.is_map())
         {
-            // if first item in el.value() object is null then skip
-            if (auto firstItem {el.value().begin()}; !firstItem.value().is_null())
+            if (el.num_children() > 0)
             {
                 information.push_back(info);
-                loadInfo(information, el.value());
+                c4::yml::Tree new_tree {};
+                c4::yml::NodeRef treeRoot {new_tree.rootref()};
+                treeRoot |= c4::yml::MAP;
+
+                for (const auto& child : el.children())
+                {
+                    treeRoot[child.key()] << child.val();
+                }
+
+                loadInfo(information, new_tree);
             }
         }
         else {}

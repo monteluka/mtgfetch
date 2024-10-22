@@ -3,15 +3,15 @@
 #include <unordered_map>
 #include <utility>
 
-std::vector<std::string> getColorIdentity(const nlohmann::json& card)
+std::vector<std::string> getColorIdentity(const ryml::Tree& card)
 {
     std::vector<std::string> colorIdentity {};
-    if (card["color_identity"][0].is_null()) colorIdentity.emplace_back("C");
-    else for (const auto& color : card["color_identity"]) colorIdentity.push_back(color);
+    if (card["color_identity"][0].val_is_null()) colorIdentity.emplace_back("C");
+    else for (const auto& color : card["color_identity"]) colorIdentity.emplace_back(color.val().str);
     return colorIdentity;
 }
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const nlohmann::json& card)
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card)
 {
     std::vector<std::string> colorIdentity {getColorIdentity(card)};
 

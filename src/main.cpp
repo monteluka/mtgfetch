@@ -1,8 +1,9 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
+#define RYML_SINGLE_HDR_DEFINE_NOW
 
 #include <iostream>
 #include "../lib/httplib.h"
-#include "../lib/json.hpp"
+#include "../lib/rapidyaml-0.7.2.hpp"
 #include "../include/card_information.h"
 #include "../include/mana_symbol.h"
 
@@ -12,12 +13,11 @@ int main()
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=indoraptor-perfect-hybrid", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=colossol-sky-turtle", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
-    // cannot be brace initialized
-    nlohmann::json card = nlohmann::json::parse(res->body);
+    c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
 
     std::vector<std::string> cardInformation {};
     std::vector<std::string> manaSymbol {};
@@ -39,7 +39,7 @@ int main()
         }
         else
         {
-            std::cout << ((manaSymbol.size() > 19) ? std::string(43, ' ') : std::string(39, ' '));
+            std::cout << ((manaSymbol[0].size() == 40) ? std::string(43, ' ') : std::string(39, ' '));
         }
 
         if (i < cardInformation.size())
