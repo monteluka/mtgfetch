@@ -127,9 +127,35 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
 
                 for (const auto& child : el.children())
                 {
-                    treeRoot[child.key()] << child.val();
+                    if (child.is_seq())
+                    {
+                        if (child.num_children() > 0)
+                        {
+                            c4::yml::NodeRef seqNode = treeRoot[child.key()];
+                            seqNode |= c4::yml::SEQ;
+                            for (const auto& seqChildNode : child.children())
+                            {
+                                if (!seqChildNode.empty()) seqNode.append_child() = seqChildNode.val();
+                            }
+                        }
+                    }
+                    else if (child.is_map())
+                    {
+                        if (child.num_children() > 0)
+                        {
+                            c4::yml::NodeRef mapNode = treeRoot[child.key()];
+                            mapNode |= c4::yml::MAP;
+                            for (const auto& seqChildNode : child.children())
+                            {
+                                mapNode[seqChildNode.key()] = seqChildNode.val();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        treeRoot[child.key()] << child.val();
+                    }
                 }
-
                 loadInfo(information, new_tree);
             }
         }
