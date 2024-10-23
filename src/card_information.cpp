@@ -1,4 +1,5 @@
 #include "../include/card_information.h"
+#include <iostream>
 
 bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
 {
@@ -81,7 +82,38 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
 
                         for (const auto& child : element.children())
                         {
-                            part[child.key()] << child.val();
+                            if (child.is_seq())
+                            {
+                                if (child.num_children() > 0)
+                                {
+                                    std::cout << child.key() << std::endl;
+                                    std::cout << child.num_children() << std::endl;
+                                    c4::yml::NodeRef seqNode = part[child.key()];
+                                    seqNode |= c4::yml::SEQ;
+                                    for (const auto& seqChildNode : child.children())
+                                    {
+                                        std::cout << seqChildNode.val() << std::endl;
+                                        if (!seqChildNode.val_is_null()) seqNode.append_child();
+                                    }
+                                }
+                            }
+                            else if (child.is_map())
+                            {
+                                if (child.num_children() > 0)
+                                {
+                                    c4::yml::NodeRef mapNode = part[child.key()];
+                                    mapNode |= c4::yml::MAP;
+                                    for (const auto& seqChildNode : child.children())
+                                    {
+                                        std::cout << seqChildNode.val() << std::endl;
+                                        if (!seqChildNode.val_is_null()) mapNode.append_child();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                part[child.key()] << child.val();
+                            }
                         }
                         loadInfo(information, new_tree);
                     }
@@ -107,7 +139,6 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
         }
         else {}
     }
-
     --depth;
 
     return true;
