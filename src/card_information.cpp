@@ -23,6 +23,7 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
         {
             size_t beginning {}, position {}, count {};
             std::string value {std::string(el.val().str, el.val().len)};
+            if (value.empty() || value == "null") continue;
             bool firstInstance {true};
             for (const char& character : value)
             {
@@ -76,9 +77,14 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
                         c4::yml::NodeRef treeRoot {new_tree.rootref()};
                         treeRoot |= c4::yml::MAP;
 
-                        std::string partString {"Part " + std::to_string(++partNumber)};
-                        c4::yml::NodeRef part {treeRoot[c4::to_csubstr(partString)]};
-                        part |= c4::yml::MAP;
+                        std::string parentNodeKey {std::string(el.key().str, el.key().len)};
+                        parentNodeKey = parentNodeKey.substr(parentNodeKey.find('_') + 1);
+                        parentNodeKey[0] = static_cast<char>(std::toupper(parentNodeKey[0]));
+                        parentNodeKey.pop_back();
+                        parentNodeKey += " " + std::to_string(++partNumber);
+
+                        c4::yml::NodeRef parentNode {treeRoot[c4::to_csubstr(parentNodeKey)]};
+                        parentNode |= c4::yml::MAP;
 
                         for (const auto& child : element.children())
                         {
@@ -86,7 +92,7 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
                             {
                                 if (child.num_children() > 0)
                                 {
-                                    c4::yml::NodeRef seqNode = part[child.key()];
+                                    c4::yml::NodeRef seqNode = parentNode[child.key()];
                                     seqNode |= c4::yml::SEQ;
                                     for (const auto& seqChildNode : child.children())
                                     {
@@ -98,17 +104,17 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
                             {
                                 if (child.num_children() > 0)
                                 {
-                                    c4::yml::NodeRef mapNode = part[child.key()];
+                                    c4::yml::NodeRef mapNode = parentNode[child.key()];
                                     mapNode |= c4::yml::MAP;
-                                    for (const auto& seqChildNode : child.children())
+                                    for (const auto& mapChildNode : child.children())
                                     {
-                                        mapNode[seqChildNode.key()] = seqChildNode.val();
+                                        mapNode[mapChildNode.key()] = mapChildNode.val();
                                     }
                                 }
                             }
                             else
                             {
-                                part[child.key()] << child.val();
+                                parentNode[child.key()] << child.val();
                             }
                         }
                         loadInfo(information, new_tree);
@@ -145,9 +151,9 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
                         {
                             c4::yml::NodeRef mapNode = treeRoot[child.key()];
                             mapNode |= c4::yml::MAP;
-                            for (const auto& seqChildNode : child.children())
+                            for (const auto& mapChildNode : child.children())
                             {
-                                mapNode[seqChildNode.key()] = seqChildNode.val();
+                                mapNode[mapChildNode.key()] = mapChildNode.val();
                             }
                         }
                     }
