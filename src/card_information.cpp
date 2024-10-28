@@ -36,7 +36,7 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
         info += std::string(2 * depth, ' ') + std::string(key.str, key.len) + ": ";
     }
     if (el.is_keyval()) { appendKeyVal(information, el, info); }
-    else if (el.is_seq()) { appendSequence(information, el, info); }
+    else if (el.is_seq()) { appendSequence(information, el, configNode, info); }
     else if (el.is_map()) { appendMap(information, el, configNode, info); }
     else {}
     --depth;
@@ -78,6 +78,7 @@ void appendKeyVal(std::vector<std::string>& information,
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
+                    const c4::yml::ConstNodeRef& configNode,
                     std::string& info)
 {
     if (seqNode.num_children() == 0)
@@ -104,39 +105,39 @@ void appendSequence(std::vector<std::string>& information,
             if (element.num_children() > 0)
             {
                 c4::yml::Tree new_tree {};
-                c4::yml::NodeRef treeRoot {new_tree.rootref()};
-                treeRoot |= c4::yml::MAP;
+                c4::yml::NodeRef parentNode {new_tree.rootref()};
+                parentNode |= c4::yml::MAP;
 
                 std::string parentNodeKey {std::string(seqNode.key().str, seqNode.key().len)};
                 parentNodeKey = parentNodeKey.substr(parentNodeKey.find('_') + 1);
                 parentNodeKey[0] = static_cast<char>(std::toupper(parentNodeKey[0]));
                 parentNodeKey.pop_back();
                 parentNodeKey += " " + std::to_string(++partNumber);
+                info.clear();
+                info += std::string(2, ' ') + parentNodeKey;
+                information.push_back(info);
 
-                c4::yml::NodeRef parentNode {treeRoot[c4::to_csubstr(parentNodeKey)]};
-                parentNode |= c4::yml::MAP;
-
-                for (const auto& child : element.children())
+                for (const auto& configNodeChild : configNode.children())
                 {
-                    if (child.is_seq())
+                    if (element[configNodeChild.val()].is_seq())
                     {
-                        if (child.num_children() > 0)
+                        if (element[configNodeChild.val()].num_children() > 0)
                         {
-                            c4::yml::NodeRef newSeqNode = parentNode[child.key()];
+                            c4::yml::NodeRef newSeqNode = parentNode[element[configNodeChild.val()].key()];
                             newSeqNode |= c4::yml::SEQ;
-                            for (const auto& seqChildNode : child.children())
+                            for (const auto& seqChildNode : element[configNodeChild.val()].children())
                             {
                                 if (!seqChildNode.val_is_null()) newSeqNode.append_child() = seqChildNode.val();
                             }
                         }
                     }
-                    else if (child.is_map())
+                    else if (element[configNodeChild.val()].is_map())
                     {
-                        if (child.num_children() > 0)
+                        if (element[configNodeChild.val()].num_children() > 0)
                         {
-                            c4::yml::NodeRef mapNode = parentNode[child.key()];
+                            c4::yml::NodeRef mapNode = parentNode[element[configNodeChild.val()].key()];
                             mapNode |= c4::yml::MAP;
-                            for (const auto& mapChildNode : child.children())
+                            for (const auto& mapChildNode : element[configNodeChild.val()].children())
                             {
                                 mapNode[mapChildNode.key()] = mapChildNode.val();
                             }
@@ -144,16 +145,22 @@ void appendSequence(std::vector<std::string>& information,
                     }
                     else
                     {
-                        parentNode[child.key()] << child.val();
+                        parentNode[element[configNodeChild.val()].key()] << element[configNodeChild.val()].val();
                     }
                 }
-                // loadInfo(information, new_tree, TODO);
+                for (const auto& key : configNode)
+                {
+                    loadInfo(information, new_tree, key);
+                }
             }
         }
     }
 }
 
-void appendMap(std::vector<std::string>& information, const c4::yml::ConstNodeRef& mapNode, const c4::yml::ConstNodeRef& configNode, std::string& info)
+void appendMap(std::vector<std::string>& information,
+               const c4::yml::ConstNodeRef& mapNode,
+               const c4::yml::ConstNodeRef& configNode,
+               std::string& info)
 {
     if (mapNode.num_children() > 0)
     {
@@ -197,6 +204,5 @@ void appendMap(std::vector<std::string>& information, const c4::yml::ConstNodeRe
         {
             loadInfo(information, new_tree, key);
         }
-
     }
 }
