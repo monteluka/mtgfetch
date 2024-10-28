@@ -13,7 +13,7 @@ int main()
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=colossol-sky-turtle", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=thraben-sentry", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
@@ -22,7 +22,42 @@ int main()
     std::vector<std::string> cardInformation {};
     std::vector<std::string> manaSymbol {};
 
-    loadInfo(cardInformation, card);
+    // scratchpad
+    // open config and read contents
+    std::string configContents {};
+    char character {};
+    std::ifstream configFile {"../presets/config.yaml", std::ifstream::in};
+    while (configFile.get(character)) configContents += character;
+
+    // parse yaml
+    c4::yml::Tree config {c4::yml::parse_in_arena(c4::to_csubstr(configContents))};
+
+    std::cout << c4::yml::as_json(card) << "\n\n\n" << config << std::endl;
+
+    // loop through each key in config
+    for (const c4::yml::ConstNodeRef module : config["modules"])
+    {
+        // check if the key in the config exists in card keys
+        if (module.has_val() && card.find_child(card.root_id(), module.val()) != c4::yml::NONE)
+        {
+            std::cout << module.val() << std::endl;
+            loadInfo(cardInformation, card, module);
+        }
+        else if (module.has_children() && module.first_child().has_key() && card.find_child(
+                     card.root_id(), module.first_child().key()) !=
+                 c4::yml::NONE)
+        {
+            loadInfo(cardInformation, card, module.first_child());
+        }
+        else
+        {
+            std::cout << "I HAVE NOTING" << std::endl;
+        }
+    }
+
+    // end scratchpad
+
+
     if (!loadManaSymbol(manaSymbol, card))
     {
         std::cout << "ERROR LOADING MANA SYMBOL" << std::endl;

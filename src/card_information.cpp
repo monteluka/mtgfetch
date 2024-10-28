@@ -1,29 +1,44 @@
 #include "../include/card_information.h"
 #include <iostream>
 
-bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card)
+bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, const c4::yml::ConstNodeRef& configNode)
 {
     static int depth {};
     ++depth;
 
-    const c4::yml::ConstNodeRef root {card.crootref()};
+    c4::csubstr key {};
 
-    for (const auto& el : root.children())
+    if (configNode.has_key())
     {
-        std::string info {};
-        if (depth < 2)
-        {
-            info += std::string(el.key().str, el.key().len) + ": ";
-        }
-        else
-        {
-            info += std::string(2 * depth, ' ') + std::string(el.key().str, el.key().len) + ": ";
-        }
-        if (el.is_keyval()) { appendKeyVal(information, el, info); }
-        else if (el.is_seq()) { appendSequence(information, el, info); }
-        else if (el.is_map()) { appendMap(information, el, info); }
-        else {}
+        key = configNode.key();
     }
+    else if (configNode.has_val())
+    {
+        key = configNode.val();
+    }
+    else
+    {
+        std::cout << "node has no value or key" << std::endl;
+        return false;
+    }
+
+    std::cout << "Number of children: " << card[key].num_children() << std::endl;
+
+    const c4::yml::ConstNodeRef el = card[key];
+
+    std::string info {};
+    if (depth < 2)
+    {
+        info += std::string(key.str, key.len) + ": ";
+    }
+    else
+    {
+        info += std::string(2 * depth, ' ') + std::string(key.str, key.len) + ": ";
+    }
+    if (el.is_keyval()) { appendKeyVal(information, el, info); }
+    else if (el.is_seq()) { appendSequence(information, el, info); }
+    else if (el.is_map()) { appendMap(information, el, info); }
+    else {}
     --depth;
 
     return true;
@@ -132,7 +147,7 @@ void appendSequence(std::vector<std::string>& information,
                         parentNode[child.key()] << child.val();
                     }
                 }
-                loadInfo(information, new_tree);
+                // loadInfo(information, new_tree, TODO);
             }
         }
     }
@@ -178,6 +193,6 @@ void appendMap(std::vector<std::string>& information, const c4::yml::ConstNodeRe
                 treeRoot[child.key()] << child.val();
             }
         }
-        loadInfo(information, new_tree);
+        // loadInfo(information, new_tree, TODO);
     }
 }

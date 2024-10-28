@@ -4,7 +4,7 @@
 #include <string>
 #include "../lib/rapidyaml-0.7.2.hpp"
 
-bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card);
+bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, const c4::yml::ConstNodeRef& configNode);
 
 void appendKeyVal(std::vector<std::string>& information, const c4::yml::ConstNodeRef& keyValNode, const std::string& info);
 void appendSequence(std::vector<std::string>& information, const c4::yml::ConstNodeRef& seqNode, std::string& info);
