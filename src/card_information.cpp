@@ -1,5 +1,6 @@
 #include "../include/card_information.h"
 #include <iostream>
+#include <unordered_set>
 
 bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, const c4::yml::ConstNodeRef& configNode)
 {
@@ -38,11 +39,11 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
     if (depth < 2)
     {
-        info += std::string(key.str, key.len) + ": ";
+        info += titleCase(key) + ": ";
     }
     else
     {
-        info += std::string(2 * depth, ' ') + std::string(key.str, key.len) + ": ";
+        info += std::string(2 * depth, ' ') + titleCase(key) + ": ";
     }
     if (el.is_keyval()) { appendKeyVal(information, el, info); }
     else if (el.is_seq()) { appendSequence(information, el, configNode, info); }
@@ -228,4 +229,58 @@ void appendMap(std::vector<std::string>& information,
             loadInfo(information, new_tree, key);
         }
     }
+}
+
+std::string titleCase(const c4::csubstr keyCsubstr)
+{
+    std::string key {keyCsubstr.str, keyCsubstr.len};
+    std::unordered_set<std::string> keys {"uri", "png", "cmc", "usd"};
+
+    // check for underscores
+    for (int i {1}; i < key.size(); ++i)
+    {
+        if (key[i] == '_')
+        {
+            key[i] = ' ';
+            if (const int nextLetter {++i}; nextLetter != key.size())
+            {
+                // if the next three letters are in keys then capitalize them
+                if (keys.find(key.substr(nextLetter, 3)) != keys.end())
+                {
+                    key[nextLetter] = static_cast<char>(std::toupper(key[nextLetter]));
+                    key[nextLetter + 1] = static_cast<char>(std::toupper(key[nextLetter + 1]));
+                    key[nextLetter + 2] = static_cast<char>(std::toupper(key[nextLetter + 2]));
+                }
+                // check to see if the next combination is "ID"
+                else if (key.substr(nextLetter, 2) == "id")
+                {
+                    key.replace(nextLetter, 2, "ID");
+                }
+                // 3 letter combination & "ID" not found so capitalize only first letter after ' '
+                else
+                {
+                    key[nextLetter] = static_cast<char>(std::toupper(key[nextLetter]));
+                }
+            }
+        }
+    }
+
+    // check for certain substring if key string is only 2 letters long
+    if (key.size() == 2 && key == "id")
+    {
+        key = "ID";
+    }
+
+    // if first 3 letters of the key is in keys set then uppercase them
+    if (keys.find(key.substr(0, 3)) != keys.end())
+    {
+        key[0] = static_cast<char>(std::toupper(key[0]));
+        key[1] = static_cast<char>(std::toupper(key[1]));
+        key[2] = static_cast<char>(std::toupper(key[2]));
+    }
+
+    // capitalize first letter
+    key[0] = static_cast<char>(std::toupper(key[0]));
+
+    return key;
 }
