@@ -39,11 +39,11 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
     if (depth < 2)
     {
-        info += titleCase(key) + ": ";
+        info += cleanKey(key) + ": ";
     }
     else
     {
-        info += std::string(2 * depth, ' ') + titleCase(key) + ": ";
+        info += std::string(2 * depth, ' ') + cleanKey(key) + ": ";
     }
     if (el.is_keyval()) { appendKeyVal(information, el, info); }
     else if (el.is_seq()) { appendSequence(information, el, configNode, info); }
@@ -59,8 +59,8 @@ void appendKeyVal(std::vector<std::string>& information,
                   const std::string& info)
 {
     size_t beginning {}, position {}, count {};
-    std::string value {std::string(keyValNode.val().str, keyValNode.val().len)};
-    if (value.empty() || value == "null") return;
+    std::string value {cleanValue(keyValNode.val())};
+    if (value.empty() || value == "Null") return;
     bool firstInstance {true};
     for (const char& character : value)
     {
@@ -100,7 +100,7 @@ void appendSequence(std::vector<std::string>& information,
     {
         for (const auto& element : seqNode.children())
         {
-            info += std::string(element.val().str, element.val().len) + ", ";
+            info += cleanValue(element.val()) + ", ";
         }
         info.pop_back();
         info.pop_back();
@@ -231,7 +231,7 @@ void appendMap(std::vector<std::string>& information,
     }
 }
 
-std::string titleCase(const c4::csubstr keyCsubstr)
+std::string cleanKey(const c4::csubstr& keyCsubstr)
 {
     std::string key {keyCsubstr.str, keyCsubstr.len};
     std::unordered_set<std::string> keys {"uri", "png", "cmc", "usd"};
@@ -283,4 +283,22 @@ std::string titleCase(const c4::csubstr keyCsubstr)
     key[0] = static_cast<char>(std::toupper(key[0]));
 
     return key;
+}
+
+std::string cleanValue(const c4::csubstr& valCsubstr)
+{
+    std::string val {valCsubstr.str, valCsubstr.len};
+
+    if (const size_t spacePos {val.find(' ')}; spacePos == std::string::npos && val.substr(0, 4) != "http")
+    {
+        val[0] = static_cast<char>(std::toupper(val[0]));
+        if (const size_t pos {val.find('_')}; pos != std::string::npos)
+        {
+            val[pos] = ' ';
+            if (const size_t newPos {pos + 1};
+                newPos < val.size()) val[newPos] = static_cast<char>(std::toupper(val[newPos]));
+        }
+    }
+
+    return val;
 }
