@@ -39,11 +39,11 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
     if (depth < 2)
     {
-        info += cleanKey(key) + ": ";
+        info += cleanKey(key);
     }
     else
     {
-        info += std::string(2 * depth, ' ') + cleanKey(key) + ": ";
+        info += std::string(2 * depth, ' ') + cleanKey(key);
     }
     if (el.is_keyval()) { appendKeyVal(information, el, info); }
     else if (el.is_seq()) { appendSequence(information, el, configNode, info); }
@@ -56,12 +56,13 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
 void appendKeyVal(std::vector<std::string>& information,
                   const c4::yml::ConstNodeRef& keyValNode,
-                  const std::string& info)
+                  std::string& info)
 {
     size_t beginning {}, position {}, count {};
     std::string value {cleanValue(keyValNode.val())};
     if (value.empty() || value == "Null") return;
     bool firstInstance {true};
+    info += ": ";
     for (const char& character : value)
     {
         if (character == '\n')
@@ -98,6 +99,7 @@ void appendSequence(std::vector<std::string>& information,
 
     if (seqNode.first_child().is_val())
     {
+        info += ": ";
         for (const auto& element : seqNode.children())
         {
             info += cleanValue(element.val()) + ", ";
@@ -118,6 +120,7 @@ void appendSequence(std::vector<std::string>& information,
                 c4::yml::NodeRef parentNode {new_tree.rootref()};
                 parentNode |= c4::yml::MAP;
 
+                // set the key for map object in sequence
                 std::string parentNodeKey {std::string(seqNode.key().str, seqNode.key().len)};
                 parentNodeKey = parentNodeKey.substr(parentNodeKey.find('_') + 1);
                 parentNodeKey[0] = static_cast<char>(std::toupper(parentNodeKey[0]));
@@ -184,7 +187,7 @@ void appendSequence(std::vector<std::string>& information,
 void appendMap(std::vector<std::string>& information,
                const c4::yml::ConstNodeRef& mapNode,
                const c4::yml::ConstNodeRef& configNode,
-               std::string& info)
+               const std::string& info)
 {
     if (mapNode.num_children() > 0)
     {
