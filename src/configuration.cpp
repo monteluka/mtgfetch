@@ -29,16 +29,21 @@ Configuration::Configuration()
         std::string boolRes {colorEnabledNode.val().str, colorEnabledNode.val().len};
         m_colorEnabled = (boolRes == "true");
     }
-    if (const c4::yml::ConstNodeRef setColorNode = m_configTree["options"]["color"]["set_color"];
-        setColorNode.id() != c4::yml::NONE)
+    if (const c4::yml::ConstNodeRef setKeyColorNode = m_configTree["options"]["color"]["set_key_color"];
+        setKeyColorNode.id() != c4::yml::NONE)
     {
-        m_textColor = std::string {setColorNode.val().str, setColorNode.val().len};
+        m_keyTextColor = std::string {setKeyColorNode.val().str, setKeyColorNode.val().len};
+    }
+    if (const c4::yml::ConstNodeRef setValColorNode = m_configTree["options"]["color"]["set_val_color"];
+        setValColorNode.id() != c4::yml::NONE)
+    {
+        m_valTextColor = std::string {setValColorNode.val().str, setValColorNode.val().len};
     }
     if (const c4::yml::ConstNodeRef imageEnabledNode = m_configTree["options"]["image"]["enabled"];
         imageEnabledNode.id() != c4::yml::NONE)
     {
         std::string boolRes {imageEnabledNode.val().str, imageEnabledNode.val().len};
-        m_colorEnabled = (boolRes == "true");
+        m_imageEnabled = (boolRes == "true");
     }
 }
 
