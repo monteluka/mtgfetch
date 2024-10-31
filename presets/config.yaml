@@ -1,4 +1,6 @@
 options:
+  formatting:
+    indent_length: 3
   color:
     enabled: true
     set_key_color: "\e[1;38;5;13m"

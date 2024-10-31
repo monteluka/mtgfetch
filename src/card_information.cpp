@@ -38,7 +38,7 @@ bool loadInfo(std::vector<std::string>& information,
     }
 
 
-    info += std::string(2 * depth, ' ') + cleanKey(key, configuration);
+    info += std::string(depth * configuration.getIndentLength(), ' ') + cleanKey(key, configuration);
 
     if (const c4::yml::ConstNodeRef el = card[key]; el.is_keyval())
     {
@@ -145,7 +145,7 @@ void appendSequence(std::vector<std::string>& information,
                     addColorToText(
                         parentNodeKey, configuration.getKeyTextColor());
                 info.clear();
-                info += std::string(depth * 2, ' ') + parentNodeKey;
+                info += std::string(depth * configuration.getIndentLength(), ' ') + parentNodeKey;
                 information.push_back(info);
 
 

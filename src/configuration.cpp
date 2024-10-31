@@ -45,6 +45,12 @@ Configuration::Configuration()
         std::string boolRes {imageEnabledNode.val().str, imageEnabledNode.val().len};
         m_imageEnabled = (boolRes == "true");
     }
+    if (const c4::yml::ConstNodeRef indentLengthNode = m_configTree["options"]["formatting"]["indent_length"];
+        indentLengthNode.id() != c4::yml::NONE)
+    {
+        std::string numberRes {indentLengthNode.val().str, indentLengthNode.val().len};
+        m_indentLength = std::stoi(numberRes);
+    }
 }
 
 std::string Configuration::findConfigFile()

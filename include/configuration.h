@@ -12,6 +12,7 @@ public:
 
     [[nodiscard]] bool getColorEnabledOption() const { return m_colorEnabled; }
     [[nodiscard]] bool getImageEnabledOption() const { return m_imageEnabled; }
+    [[nodiscard]] int getIndentLength() const { return m_indentLength; }
     [[nodiscard]] std::string getKeyTextColor() const { return m_keyTextColor; }
     [[nodiscard]] std::string getValTextColor() const { return m_valTextColor; }
     [[nodiscard]] c4::yml::Tree getConfigTree() const { return m_configTree; }
@@ -19,6 +20,7 @@ public:
 private:
     bool m_colorEnabled {false};
     bool m_imageEnabled {false};
+    int m_indentLength {2};
     std::string m_keyTextColor;
     std::string m_valTextColor;
     c4::yml::Tree m_configTree {};
