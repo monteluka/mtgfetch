@@ -5,6 +5,7 @@
 #include "../lib/httplib.h"
 #include "../lib/rapidyaml-0.7.2.hpp"
 #include "../include/card_information.h"
+#include "../include/configuration.h"
 #include "../include/mana_symbol.h"
 
 int main()
@@ -13,7 +14,7 @@ int main()
     cli.set_ca_cert_path("", "/etc/ssl/certs");
 
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=thraben-sentry", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=esika-god-of-the-tree", headers)};
 
     std::cout << "HTTP status is: " << res->status << '\n';
 
@@ -24,13 +25,8 @@ int main()
 
     // scratchpad
     // open config and read contents
-    std::string configContents {};
-    char character {};
-    std::ifstream configFile {"../presets/config.yaml", std::ifstream::in};
-    while (configFile.get(character)) configContents += character;
-
-    // parse yaml
-    c4::yml::Tree config {c4::yml::parse_in_arena(c4::to_csubstr(configContents))};
+    const Configuration configuration;
+    const c4::yml::Tree& config {configuration.getConfigTree()};
 
     std::cout << c4::yml::as_json(card) << "\n\n\n" << config << std::endl;
 
@@ -74,7 +70,7 @@ int main()
         }
         else
         {
-            std::cout << ((manaSymbol[0].size() == 40) ? std::string(43, ' ') : std::string(39, ' '));
+            std::cout << ((manaSymbol[0].size() > 40) ? std::string(43, ' ') : std::string(39, ' '));
         }
 
         if (i < cardInformation.size())

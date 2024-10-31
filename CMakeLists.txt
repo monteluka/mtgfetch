@@ -22,7 +22,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
         lib/rapidyaml-0.7.2.hpp
         src/mana_symbol.cpp
         src/card_information.cpp
+        src/configuration.cpp
         include/mana_symbol.h
-        include/card_information.h)
+        include/card_information.h
+        include/configuration.h)
 
 target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto)
