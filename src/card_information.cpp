@@ -2,7 +2,10 @@
 #include <iostream>
 #include <unordered_set>
 
-bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, const c4::yml::ConstNodeRef& configNode)
+bool loadInfo(std::vector<std::string>& information,
+              const ryml::Tree& card,
+              const c4::yml::ConstNodeRef& configNode,
+              const Configuration& configuration)
 {
     static int depth {};
     ++depth;
@@ -19,21 +22,14 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
     }
     else
     {
-        std::cout << configNode << std::endl;
-        std::cout << configNode.num_children() << std::endl;
-        std::cout << configNode.is_seq() << std::endl;
-        std::cout << configNode.is_map() << std::endl;
-        std::cout << "node has no value or key" << std::endl;
         --depth;
         for (const c4::yml::ConstNodeRef child : configNode)
         {
-            loadInfo(information, card, child);
+            loadInfo(information, card, child, configuration);
         }
         return false;
     }
 
-    std::cout << card << std::endl;
-    std::cout << card.num_children(card.root_id()) << std::endl;
 
     if (!nodeExists(card, key))
     {
@@ -45,15 +41,15 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
     if (depth < 2)
     {
-        info += cleanKey(key);
+        info += cleanKey(key, configuration);
     }
     else
     {
-        info += std::string(2 * depth, ' ') + cleanKey(key);
+        info += std::string(2 * depth, ' ') + cleanKey(key, configuration);
     }
-    if (el.is_keyval()) { appendKeyVal(information, el, info); }
-    else if (el.is_seq()) { appendSequence(information, el, configNode, info); }
-    else if (el.is_map()) { appendMap(information, el, configNode, info); }
+    if (el.is_keyval()) { appendKeyVal(information, el, info, configuration); }
+    else if (el.is_seq()) { appendSequence(information, el, configNode, info, configuration); }
+    else if (el.is_map()) { appendMap(information, el, configNode, info, configuration); }
     else {}
     --depth;
 
@@ -62,7 +58,8 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
 
 void appendKeyVal(std::vector<std::string>& information,
                   const c4::yml::ConstNodeRef& keyValNode,
-                  std::string& info)
+                  std::string& info,
+                  const Configuration& configuration)
 {
     size_t beginning {}, position {}, count {};
     std::string value {cleanValue(keyValNode.val())};
@@ -75,11 +72,15 @@ void appendKeyVal(std::vector<std::string>& information,
         {
             if (!firstInstance)
             {
-                information.push_back(std::string(info.size(), ' ') + value.substr(beginning, count));
+                std::string val {value.substr(beginning, count)};
+                if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
+                information.push_back(std::string(keyValNode.key().size() + 2, ' ') + val);
             }
             else
             {
-                information.push_back(info + value.substr(beginning, count));
+                std::string val {value.substr(beginning, count)};
+                if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
+                information.push_back(info + val);
                 firstInstance = false;
             }
             beginning = position + 1;
@@ -88,15 +89,18 @@ void appendKeyVal(std::vector<std::string>& information,
         ++count;
         ++position;
     }
+    std::string val {value.substr(beginning, count)};
+    if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
     firstInstance
-        ? information.push_back(info + value.substr(beginning, count))
-        : information.push_back(std::string(info.size(), ' ') + value.substr(beginning, count));
+        ? information.push_back(info + val)
+        : information.push_back(std::string(keyValNode.key().size() + 2, ' ') + val);
 }
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
                     const c4::yml::ConstNodeRef& configNode,
-                    std::string& info)
+                    std::string& info,
+                    const Configuration& configuration)
 {
     if (seqNode.num_children() == 0)
     {
@@ -108,10 +112,12 @@ void appendSequence(std::vector<std::string>& information,
         info += ": ";
         for (const auto& element : seqNode.children())
         {
-            info += cleanValue(element.val()) + ", ";
+            std::string val {cleanValue(element.val()) + ", "};
+            if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
+            info += val;
         }
-        info.pop_back();
-        info.pop_back();
+        const size_t pos = info.find_last_of(',');
+        info.erase(pos, std::string::npos);
         information.push_back(info);
     }
     else
@@ -132,17 +138,16 @@ void appendSequence(std::vector<std::string>& information,
                 parentNodeKey[0] = static_cast<char>(std::toupper(parentNodeKey[0]));
                 parentNodeKey.pop_back();
                 parentNodeKey += " " + std::to_string(++partNumber);
+                if (configuration.getColorEnabledOption())
+                    addColorToText(parentNodeKey, configuration.getKeyTextColor());
                 info.clear();
                 info += std::string(2, ' ') + parentNodeKey;
                 information.push_back(info);
 
-                std::cout << configNode << std::endl;
 
                 for (const auto& configNodeChild : configNode.children())
                 {
                     c4::csubstr key {};
-                    std::cout << configNodeChild << std::endl;
-                    std::cout << configNodeChild.has_val() << " " << configNodeChild.has_key() << std::endl;
                     if (configNodeChild.has_val())
                     {
                         key = configNodeChild.val();
@@ -151,7 +156,6 @@ void appendSequence(std::vector<std::string>& information,
                     {
                         key = configNodeChild[0].key();
                     }
-                    std::cout << key << std::endl;
                     if (!nodeExists(element, key)) continue;
                     if (element[key].is_seq())
                     {
@@ -184,7 +188,7 @@ void appendSequence(std::vector<std::string>& information,
                 }
                 for (const auto& key : configNode)
                 {
-                    loadInfo(information, new_tree, key);
+                    loadInfo(information, new_tree, key, configuration);
                 }
             }
         }
@@ -194,7 +198,8 @@ void appendSequence(std::vector<std::string>& information,
 void appendMap(std::vector<std::string>& information,
                const c4::yml::ConstNodeRef& mapNode,
                const c4::yml::ConstNodeRef& configNode,
-               const std::string& info)
+               const std::string& info,
+               const Configuration& configuration)
 {
     if (mapNode.num_children() > 0)
     {
@@ -237,12 +242,12 @@ void appendMap(std::vector<std::string>& information,
         }
         for (const auto& key : configNode)
         {
-            loadInfo(information, new_tree, key);
+            loadInfo(information, new_tree, key, configuration);
         }
     }
 }
 
-std::string cleanKey(const c4::csubstr& keyCsubstr)
+std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configuration)
 {
     std::string key {keyCsubstr.str, keyCsubstr.len};
     std::unordered_set<std::string> keys {"uri", "png", "cmc", "usd"};
@@ -293,6 +298,9 @@ std::string cleanKey(const c4::csubstr& keyCsubstr)
     // capitalize first letter
     key[0] = static_cast<char>(std::toupper(key[0]));
 
+    // apply color if neccesarry
+    if (configuration.getColorEnabledOption()) addColorToText(key, configuration.getKeyTextColor());
+
     return key;
 }
 
@@ -317,4 +325,12 @@ std::string cleanValue(const c4::csubstr& valCsubstr)
 inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key)
 {
     return card.find_child(key).id() != c4::yml::NONE;
+}
+
+inline void addColorToText(std::string& text, const std::string& textColor)
+{
+    const std::string resetCode {"\033[0m"};
+
+    text.insert(0, textColor);
+    text.append(resetCode);
 }

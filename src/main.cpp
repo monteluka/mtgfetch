@@ -35,13 +35,13 @@ int main()
         if (module.has_val() && card.find_child(card.root_id(), module.val()) != c4::yml::NONE)
         {
             std::cout << module.val() << std::endl;
-            loadInfo(cardInformation, card, module);
+            loadInfo(cardInformation, card, module, configuration);
         }
         else if (module.has_children() && module.first_child().has_key() && card.find_child(
                      card.root_id(), module.first_child().key()) !=
                  c4::yml::NONE)
         {
-            loadInfo(cardInformation, card, module.first_child());
+            loadInfo(cardInformation, card, module.first_child(), configuration);
         }
         else
         {
