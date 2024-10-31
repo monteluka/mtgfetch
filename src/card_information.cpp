@@ -187,12 +187,24 @@ void appendSequence(std::vector<std::string>& information,
                     }
                     else
                     {
+                        const std::string value {
+                            std::string(element[key].val().str,
+                                        element[key].val().len)
+                        };
+                        if (value.empty() || value == "null") continue;
                         parentNode[element[key].key()] << element[key].val();
                     }
                 }
-                for (const auto& key : configNode)
+
+                // check to see if new_tree has children (values)
+                // if not then we skip so that dangling key isn't added to output
+                if (new_tree.has_children(new_tree.root_id()))
                 {
-                    loadInfo(information, new_tree, key, configuration);
+                    information.push_back(info);
+                    for (const auto& key : configNode)
+                    {
+                        loadInfo(information, new_tree, key, configuration);
+                    }
                 }
                 --depth;
             }
@@ -208,7 +220,6 @@ void appendMap(std::vector<std::string>& information,
 {
     if (mapNode.num_children() > 0)
     {
-        information.push_back(info);
         c4::yml::Tree new_tree {};
         c4::yml::NodeRef treeRoot {new_tree.rootref()};
         treeRoot |= c4::yml::MAP;
@@ -242,12 +253,24 @@ void appendMap(std::vector<std::string>& information,
             }
             else
             {
-                treeRoot[mapNode[configNodeChild.val()].key()] << mapNode[configNodeChild.val()].val();
+                const std::string value {
+                    std::string(mapNode[configNodeChild.val()].val().str,
+                                mapNode[configNodeChild.val()].val().len)
+                };
+                if (value.empty() || value == "null") continue;
+                treeRoot[mapNode[configNodeChild.val()].key()] << value;
             }
         }
-        for (const auto& key : configNode)
+
+        // check to see if new_tree has children (values)
+        // if not then we skip so that dangling key isn't added to output
+        if (new_tree.has_children(new_tree.root_id()))
         {
-            loadInfo(information, new_tree, key, configuration);
+            information.push_back(info);
+            for (const auto& key : configNode)
+            {
+                loadInfo(information, new_tree, key, configuration);
+            }
         }
     }
 }
