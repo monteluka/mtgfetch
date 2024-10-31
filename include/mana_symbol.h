@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 #include "../lib/rapidyaml-0.7.2.hpp"
+#include "../include/configuration.h"
 
 std::vector<std::string> getColorIdentity(const ryml::Tree& card);
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card);
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration);
 
 bool addSingleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,

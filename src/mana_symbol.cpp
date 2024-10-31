@@ -11,7 +11,7 @@ std::vector<std::string> getColorIdentity(const ryml::Tree& card)
     return colorIdentity;
 }
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card)
+bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration)
 {
     std::vector<std::string> colorIdentity {getColorIdentity(card)};
 
@@ -26,7 +26,15 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& c
 
     // choose regular or small symbol based on how many colors in identity
     const size_t size {colorIdentity.size()};
-    std::string extension {(size > 1) ? "_small.txt" : ".txt"};
+    std::string extension {};
+    if (configuration.getColorEnabledOption())
+    {
+        extension = (size > 1) ? "_small_colored.txt" : "_colored.txt";
+    }
+    else
+    {
+        extension = (size > 1) ? "_small.txt" : ".txt";
+    }
 
     // make a list of open files that are needed
     std::vector<std::ifstream> files {};
@@ -37,6 +45,7 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& c
             std::string filename {"../images/ascii/" + it->second + extension};
             std::ifstream asciiArt {filename, std::ifstream::in};
             if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
+            asciiArt.close();
         }
         else
         {

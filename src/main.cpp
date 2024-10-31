@@ -28,8 +28,6 @@ int main()
     const Configuration configuration;
     const c4::yml::Tree& config {configuration.getConfigTree()};
 
-    std::cout << c4::yml::as_json(card) << "\n\n\n" << config << std::endl;
-
     // loop through each key in config
     for (const c4::yml::ConstNodeRef module : config["modules"])
     {
@@ -54,7 +52,7 @@ int main()
     // end scratchpad
 
 
-    if (!loadManaSymbol(manaSymbol, card))
+    if (!loadManaSymbol(manaSymbol, card, configuration))
     {
         std::cout << "ERROR LOADING MANA SYMBOL" << std::endl;
         return -1;
@@ -80,18 +78,6 @@ int main()
 
         std::cout << '\n';
     }
-
-
-    // std::cout << "\n\n\n";
-
-    // for (auto& el : card.items())
-    // {
-    // std::cout << el.key() << " : " << el.value() << "\n";
-    // }
-
-    // std::cout << "\n\n\n";
-
-    // std::cout << std::setw(4) << card << std::endl;
 
     return 0;
 }
