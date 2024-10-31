@@ -8,49 +8,46 @@
 #include "../include/configuration.h"
 #include "../include/mana_symbol.h"
 
-int main()
+void loadCardInfo(const c4::yml::Tree& card,
+                  std::vector<std::string>& cardInformation,
+                  const Configuration& configuration)
 {
-    httplib::Client cli {"https://api.scryfall.com"};
-    cli.set_ca_cert_path("", "/etc/ssl/certs");
-
-    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=esika-god-of-the-tree", headers)};
-
-    std::cout << "HTTP status is: " << res->status << '\n';
-
-    c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
-
-    std::vector<std::string> cardInformation {};
-    std::vector<std::string> manaSymbol {};
-
-    // scratchpad
-    // open config and read contents
-    const Configuration configuration;
     const c4::yml::Tree& config {configuration.getConfigTree()};
-
     // loop through each key in config
     for (const c4::yml::ConstNodeRef module : config["modules"])
     {
         // check if the key in the config exists in card keys
         if (module.has_val() && card.find_child(card.root_id(), module.val()) != c4::yml::NONE)
         {
-            loadInfo(cardInformation, card, module, configuration);
+            readNode(cardInformation, card, module, configuration);
         }
         else if (module.has_children() && module.first_child().has_key() && card.find_child(
                      card.root_id(), module.first_child().key()) !=
                  c4::yml::NONE)
         {
-            loadInfo(cardInformation, card, module.first_child(), configuration);
+            readNode(cardInformation, card, module.first_child(), configuration);
         }
-        else
-        {
-            std::cout << "I HAVE NOTING" << std::endl;
-        }
+        else {}
     }
+}
 
-    // end scratchpad
+int main()
+{
+    httplib::Client cli {"https://api.scryfall.com"};
+    cli.set_ca_cert_path("", "/etc/ssl/certs");
 
+    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
+    auto res {cli.Get("/cards/named?fuzzy=blasphemous-edict", headers)};
 
+    c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
+
+    std::vector<std::string> cardInformation {};
+    std::vector<std::string> manaSymbol {};
+
+    // open config and read contents
+    const Configuration configuration;
+
+    loadCardInfo(card, cardInformation, configuration);
     if (!loadManaSymbol(manaSymbol, card, configuration))
     {
         std::cout << "ERROR LOADING MANA SYMBOL" << std::endl;
@@ -58,7 +55,6 @@ int main()
     }
 
     const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
-
     for (size_t i = 0; i < largestBuffer; i++)
     {
         if (i < manaSymbol.size())

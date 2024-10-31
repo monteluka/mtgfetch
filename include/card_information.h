@@ -5,7 +5,7 @@
 #include "../lib/rapidyaml-0.7.2.hpp"
 #include "../include/configuration.h"
 
-bool loadInfo(std::vector<std::string>& information,
+bool readNode(std::vector<std::string>& information,
               const ryml::Tree& card,
               const c4::yml::ConstNodeRef& configNode,
               const Configuration& configuration);

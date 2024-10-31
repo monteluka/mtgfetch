@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unordered_set>
 
-bool loadInfo(std::vector<std::string>& information,
+bool readNode(std::vector<std::string>& information,
               const ryml::Tree& card,
               const c4::yml::ConstNodeRef& configNode,
               const Configuration& configuration)
@@ -25,7 +25,7 @@ bool loadInfo(std::vector<std::string>& information,
         --depth;
         for (const c4::yml::ConstNodeRef child : configNode)
         {
-            loadInfo(information, card, child, configuration);
+            readNode(information, card, child, configuration);
         }
         return false;
     }
@@ -203,7 +203,7 @@ void appendSequence(std::vector<std::string>& information,
                     information.push_back(info);
                     for (const auto& key : configNode)
                     {
-                        loadInfo(information, new_tree, key, configuration);
+                        readNode(information, new_tree, key, configuration);
                     }
                 }
                 --depth;
@@ -269,7 +269,7 @@ void appendMap(std::vector<std::string>& information,
             information.push_back(info);
             for (const auto& key : configNode)
             {
-                loadInfo(information, new_tree, key, configuration);
+                readNode(information, new_tree, key, configuration);
             }
         }
     }
