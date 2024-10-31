@@ -35,6 +35,12 @@ bool loadInfo(std::vector<std::string>& information, const ryml::Tree& card, con
     std::cout << card << std::endl;
     std::cout << card.num_children(card.root_id()) << std::endl;
 
+    if (!nodeExists(card, key))
+    {
+        --depth;
+        return false;
+    }
+
     const c4::yml::ConstNodeRef el = card[key];
 
     if (depth < 2)
@@ -146,6 +152,7 @@ void appendSequence(std::vector<std::string>& information,
                         key = configNodeChild[0].key();
                     }
                     std::cout << key << std::endl;
+                    if (!nodeExists(element, key)) continue;
                     if (element[key].is_seq())
                     {
                         if (element[key].num_children() > 0)
@@ -198,6 +205,7 @@ void appendMap(std::vector<std::string>& information,
 
         for (const auto& configNodeChild : configNode.children())
         {
+            if (!nodeExists(mapNode, configNodeChild.val())) continue;
             if (mapNode[configNodeChild.val()].is_seq())
             {
                 if (mapNode[configNodeChild.val()].num_children() > 0)
@@ -304,4 +312,9 @@ std::string cleanValue(const c4::csubstr& valCsubstr)
     }
 
     return val;
+}
+
+inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key)
+{
+    return card.find_child(key).id() != c4::yml::NONE;
 }
