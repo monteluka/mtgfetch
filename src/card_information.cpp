@@ -7,7 +7,7 @@ bool loadInfo(std::vector<std::string>& information,
               const c4::yml::ConstNodeRef& configNode,
               const Configuration& configuration)
 {
-    static int depth {};
+    static int depth {-1};
     ++depth;
     c4::csubstr key {};
     std::string info {};
@@ -37,18 +37,14 @@ bool loadInfo(std::vector<std::string>& information,
         return false;
     }
 
-    const c4::yml::ConstNodeRef el = card[key];
 
-    if (depth < 2)
+    info += std::string(2 * depth, ' ') + cleanKey(key, configuration);
+
+    if (const c4::yml::ConstNodeRef el = card[key]; el.is_keyval())
     {
-        info += cleanKey(key, configuration);
+        appendKeyVal(information, el, info, configuration, depth);
     }
-    else
-    {
-        info += std::string(2 * depth, ' ') + cleanKey(key, configuration);
-    }
-    if (el.is_keyval()) { appendKeyVal(information, el, info, configuration); }
-    else if (el.is_seq()) { appendSequence(information, el, configNode, info, configuration); }
+    else if (el.is_seq()) { appendSequence(information, el, configNode, info, configuration, depth); }
     else if (el.is_map()) { appendMap(information, el, configNode, info, configuration); }
     else {}
     --depth;
@@ -59,12 +55,16 @@ bool loadInfo(std::vector<std::string>& information,
 void appendKeyVal(std::vector<std::string>& information,
                   const c4::yml::ConstNodeRef& keyValNode,
                   std::string& info,
-                  const Configuration& configuration)
+                  const Configuration& configuration,
+                  const int& depth)
 {
-    size_t beginning {}, position {}, count {};
     std::string value {cleanValue(keyValNode.val())};
     if (value.empty() || value == "Null") return;
+
+    size_t beginning {}, position {}, count {};
+    const int space {(depth * 2) + 2};
     bool firstInstance {true};
+
     info += ": ";
     for (const char& character : value)
     {
@@ -74,7 +74,7 @@ void appendKeyVal(std::vector<std::string>& information,
             {
                 std::string val {value.substr(beginning, count)};
                 if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
-                information.push_back(std::string(keyValNode.key().size() + 2, ' ') + val);
+                information.push_back(std::string(keyValNode.key().size() + space, ' ') + val);
             }
             else
             {
@@ -93,14 +93,15 @@ void appendKeyVal(std::vector<std::string>& information,
     if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
     firstInstance
         ? information.push_back(info + val)
-        : information.push_back(std::string(keyValNode.key().size() + 2, ' ') + val);
+        : information.push_back(std::string(keyValNode.key().size() + space, ' ') + val);
 }
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
                     const c4::yml::ConstNodeRef& configNode,
                     std::string& info,
-                    const Configuration& configuration)
+                    const Configuration& configuration,
+                    int& depth)
 {
     if (seqNode.num_children() == 0)
     {
@@ -128,6 +129,8 @@ void appendSequence(std::vector<std::string>& information,
         {
             if (element.num_children() > 0)
             {
+                ++depth;
+
                 c4::yml::Tree new_tree {};
                 c4::yml::NodeRef parentNode {new_tree.rootref()};
                 parentNode |= c4::yml::MAP;
@@ -139,9 +142,10 @@ void appendSequence(std::vector<std::string>& information,
                 parentNodeKey.pop_back();
                 parentNodeKey += " " + std::to_string(++partNumber);
                 if (configuration.getColorEnabledOption())
-                    addColorToText(parentNodeKey, configuration.getKeyTextColor());
+                    addColorToText(
+                        parentNodeKey, configuration.getKeyTextColor());
                 info.clear();
-                info += std::string(2, ' ') + parentNodeKey;
+                info += std::string(depth * 2, ' ') + parentNodeKey;
                 information.push_back(info);
 
 
@@ -190,6 +194,7 @@ void appendSequence(std::vector<std::string>& information,
                 {
                     loadInfo(information, new_tree, key, configuration);
                 }
+                --depth;
             }
         }
     }
@@ -298,7 +303,7 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
     // capitalize first letter
     key[0] = static_cast<char>(std::toupper(key[0]));
 
-    // apply color if neccesarry
+    // apply color if necessary
     if (configuration.getColorEnabledOption()) addColorToText(key, configuration.getKeyTextColor());
 
     return key;

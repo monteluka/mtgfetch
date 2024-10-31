@@ -13,13 +13,15 @@ bool loadInfo(std::vector<std::string>& information,
 void appendKeyVal(std::vector<std::string>& information,
                   const c4::yml::ConstNodeRef& keyValNode,
                   std::string& info,
-                  const Configuration& configuration);
+                  const Configuration& configuration,
+                  const int& depth);
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
                     const c4::yml::ConstNodeRef& configNode,
                     std::string& info,
-                    const Configuration& configuration);
+                    const Configuration& configuration,
+                    int& depth);
 
 void appendMap(std::vector<std::string>& information,
                const c4::yml::ConstNodeRef& mapNode,
