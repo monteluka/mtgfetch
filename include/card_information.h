@@ -31,7 +31,8 @@ void appendMap(std::vector<std::string>& information,
 
 std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configuration);
 
-std::string cleanValue(const c4::csubstr& valCsubstr);
+std::string cleanValue(const c4::csubstr& valCsubstr, const Configuration& configuration);
+std::string cleanValue(std::string& valStr, const Configuration& configuration);
 
 inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key);
 

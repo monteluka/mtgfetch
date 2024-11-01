@@ -113,8 +113,8 @@ void appendSequence(std::vector<std::string>& information,
         info += ": ";
         for (const auto& element : seqNode.children())
         {
-            std::string val {cleanValue(element.val()) + ", "};
-            if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
+            std::string val {std::string(element.val().str, element.val().len) + ", "};
+            cleanValue(val, configuration);
             info += val;
         }
         const size_t pos = info.find_last_of(',');
@@ -332,7 +332,7 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
     return key;
 }
 
-std::string cleanValue(const c4::csubstr& valCsubstr)
+std::string cleanValue(const c4::csubstr& valCsubstr, const Configuration& configuration)
 {
     std::string val {valCsubstr.str, valCsubstr.len};
 
@@ -347,7 +347,33 @@ std::string cleanValue(const c4::csubstr& valCsubstr)
         }
     }
 
+    if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
+
     return val;
+}
+
+std::string cleanValue(std::string& valStr, const Configuration& configuration)
+{
+    if (const size_t spacePos {valStr.find(' ')}; spacePos == std::string::npos && valStr.substr(0, 4) != "http")
+    {
+        valStr[0] = static_cast<char>(std::toupper(valStr[0]));
+        if (const size_t pos {valStr.find('_')}; pos != std::string::npos)
+        {
+            valStr[pos] = ' ';
+            if (const size_t newPos {pos + 1};
+                newPos < valStr.size()) valStr[newPos] = static_cast<char>(std::toupper(valStr[newPos]));
+        }
+    }
+
+    // this check is for if we are checking elements of a sequence
+    if (valStr.size() > 2 && valStr.substr(valStr.size() - 2) == ", ")
+    {
+        valStr[0] = static_cast<char>(std::toupper(valStr[0]));
+    }
+
+    if (configuration.getColorEnabledOption()) addColorToText(valStr, configuration.getValTextColor());
+
+    return valStr;
 }
 
 inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key)
