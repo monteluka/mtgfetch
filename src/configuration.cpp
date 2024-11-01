@@ -3,10 +3,14 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <unordered_set>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 Configuration::Configuration()
 {
+    // get terminal width
+    if (winsize size {}; ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0) m_terminalWidth = size.ws_col;
+
     // find config file
     std::string configFilePath {findConfigFile()};
 
