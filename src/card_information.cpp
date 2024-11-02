@@ -105,14 +105,7 @@ void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
     size_t start {0};
     if (value.find('\n') == std::string::npos)
     {
-        while (end - start > maxStringLength)
-        {
-            const size_t breakPos {value.rfind(' ', start + maxStringLength)};
-            if (breakPos == std::string::npos) break;
-            value.insert(breakPos, "\n");
-            if (breakPos + 1 < end) value.erase(breakPos + 1, 1);
-            start = breakPos + 1;
-        }
+        addLineBreaks(value, start, end, maxStringLength);
     }
     else
     {
@@ -120,18 +113,21 @@ void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
         {
             size_t substrEnd {value.find('\n', start + 1)};
             if (substrEnd == std::string::npos) substrEnd = end;
-
-            while (substrEnd - start > maxStringLength)
-            {
-                const size_t breakPos {value.rfind(' ', start + maxStringLength)};
-                if (breakPos == std::string::npos) break;
-                value.insert(breakPos, "\n");
-                if (breakPos + 1 < end) value.erase(breakPos + 1, 1);
-                start = breakPos + 1;
-            }
-
+            addLineBreaks(value, start, substrEnd, maxStringLength);
             start = substrEnd + 1;
         }
+    }
+}
+
+inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const int& maxStringLength)
+{
+    while (end - start > maxStringLength)
+    {
+        const size_t breakPos {value.rfind(' ', start + maxStringLength)};
+        if (breakPos == std::string::npos) break;
+        value.insert(breakPos, "\n");
+        if (breakPos + 1 < end) value.erase(breakPos + 1, 1);
+        start = breakPos + 1;
     }
 }
 

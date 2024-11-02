@@ -16,7 +16,9 @@ void appendKeyVal(std::vector<std::string>& information,
                   const Configuration& configuration,
                   const int& depth);
 
-void fitValue(std::string&value, const int& terminalWidth, const int& keyWidth);
+void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth);
+
+inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const int& maxStringLength);
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
@@ -34,6 +36,7 @@ void appendMap(std::vector<std::string>& information,
 std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configuration);
 
 std::string cleanValue(const c4::csubstr& valCsubstr, const Configuration& configuration);
+
 std::string cleanValue(std::string& valStr, const Configuration& configuration);
 
 inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key);
