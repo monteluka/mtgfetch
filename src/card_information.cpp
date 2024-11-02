@@ -97,47 +97,40 @@ void appendKeyVal(std::vector<std::string>& information,
 
 void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
 {
-    // if terminalWidth not found then don't try to fit anything
-    if (terminalWidth == 0) return;
-    const int keyPlusSymbolWidth {keyWidth + 43};
-    size_t end {value.size()};
+    constexpr int manaSymbolLength {43};
+    if (terminalWidth <= manaSymbolLength + keyWidth) return;
+    const int maxStringLength {terminalWidth - (manaSymbolLength + keyWidth)};
+
+    const size_t end {value.size()};
+    size_t start {0};
     if (value.find('\n') == std::string::npos)
     {
-        while (keyPlusSymbolWidth + end > terminalWidth)
+        while (end - start > maxStringLength)
         {
-            const size_t lineBreakPos {value.find_last_of(",.", end - 1)};
-
-            if (lineBreakPos == std::string::npos) break;
-
-            value.insert(lineBreakPos + 1, "\n ");
-
-            end = lineBreakPos;
+            const size_t breakPos {value.rfind(' ', start + maxStringLength)};
+            if (breakPos == std::string::npos) break;
+            value.insert(breakPos, "\n");
+            if (breakPos + 1 < end) value.erase(breakPos + 1, 1);
+            start = breakPos + 1;
         }
     }
     else
     {
-        while (true)
+        while (start < end)
         {
-            size_t substrStart {value.rfind('\n', end - 1)};
-            if (substrStart == std::string::npos) substrStart = 0;
+            size_t substrEnd {value.find('\n', start + 1)};
+            if (substrEnd == std::string::npos) substrEnd = end;
 
-            while (keyPlusSymbolWidth + end - substrStart > terminalWidth)
+            while (substrEnd - start > maxStringLength)
             {
-                const size_t lineBreakPos {value.find_last_of(",.", end - 1)};
-
-                if (lineBreakPos == std::string::npos) break;
-                if (end < substrStart) break;
-
-                value.insert(lineBreakPos + 1, "\n");
-
-                if (lineBreakPos + 2 < value.size()) value.erase(lineBreakPos + 2, 1);
-
-                end = lineBreakPos;
+                const size_t breakPos {value.rfind(' ', start + maxStringLength)};
+                if (breakPos == std::string::npos) break;
+                value.insert(breakPos, "\n");
+                if (breakPos + 1 < end) value.erase(breakPos + 1, 1);
+                start = breakPos + 1;
             }
 
-            if (end == 0) break;
-
-            end = substrStart;
+            start = substrEnd + 1;
         }
     }
 }
