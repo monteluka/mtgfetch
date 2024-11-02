@@ -16,6 +16,8 @@ void appendKeyVal(std::vector<std::string>& information,
                   const Configuration& configuration,
                   const int& depth);
 
+void fitValue(std::string&value, const int& terminalWidth, const int& keyWidth);
+
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,
                     const c4::yml::ConstNodeRef& configNode,

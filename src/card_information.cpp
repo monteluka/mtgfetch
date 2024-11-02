@@ -58,12 +58,14 @@ void appendKeyVal(std::vector<std::string>& information,
                   const Configuration& configuration,
                   const int& depth)
 {
-    std::string value {cleanValue(keyValNode.val())};
-    if (value.empty() || value == "Null") return;
-
     size_t beginning {}, position {}, count {};
-    const int space {(depth * 2) + 2};
+    const int space {static_cast<int>(depth * 2 + keyValNode.key().size() + 2)};
     bool firstInstance {true};
+
+    std::string value {keyValNode.val().str, keyValNode.val().len};
+    if (value.empty() || value == "Null") return;
+    fitValue(value, configuration.getTerminalWidth(), space);
+    cleanValue(value, configuration);
 
     info += ": ";
     for (const char& character : value)
@@ -73,13 +75,11 @@ void appendKeyVal(std::vector<std::string>& information,
             if (!firstInstance)
             {
                 std::string val {value.substr(beginning, count)};
-                if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
-                information.push_back(std::string(keyValNode.key().size() + space, ' ') + val);
+                information.push_back(std::string(space, ' ') + val);
             }
             else
             {
                 std::string val {value.substr(beginning, count)};
-                if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
                 information.push_back(info + val);
                 firstInstance = false;
             }
@@ -90,10 +90,56 @@ void appendKeyVal(std::vector<std::string>& information,
         ++position;
     }
     std::string val {value.substr(beginning, count)};
-    if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
     firstInstance
         ? information.push_back(info + val)
-        : information.push_back(std::string(keyValNode.key().size() + space, ' ') + val);
+        : information.push_back(std::string(space, ' ') + val);
+}
+
+void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
+{
+    // if terminalWidth not found then don't try to fit anything
+    if (terminalWidth == 0) return;
+    const int keyPlusSymbolWidth {keyWidth + 43};
+    size_t end {value.size()};
+    if (value.find('\n') == std::string::npos)
+    {
+        while (keyPlusSymbolWidth + end > terminalWidth)
+        {
+            const size_t lineBreakPos {value.find_last_of(",.", end - 1)};
+
+            if (lineBreakPos == std::string::npos) break;
+
+            value.insert(lineBreakPos + 1, "\n ");
+
+            end = lineBreakPos;
+        }
+    }
+    else
+    {
+        while (true)
+        {
+            size_t substrStart {value.rfind('\n', end - 1)};
+            if (substrStart == std::string::npos) substrStart = 0;
+
+            while (keyPlusSymbolWidth + end - substrStart > terminalWidth)
+            {
+                const size_t lineBreakPos {value.find_last_of(",.", end - 1)};
+
+                if (lineBreakPos == std::string::npos) break;
+                if (end < substrStart) break;
+
+                value.insert(lineBreakPos + 1, "\n");
+
+                if (lineBreakPos + 2 < value.size()) value.erase(lineBreakPos + 2, 1);
+
+                end = lineBreakPos;
+            }
+
+            if (end == 0) break;
+
+            end = substrStart;
+        }
+    }
 }
 
 void appendSequence(std::vector<std::string>& information,
