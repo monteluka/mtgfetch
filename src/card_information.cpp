@@ -433,4 +433,17 @@ inline void addColorToText(std::string& text, const std::string& textColor)
 
     text.insert(0, textColor);
     text.append(resetCode);
+
+    if (size_t lineBreakPos {text.find('\n')}; lineBreakPos != std::string::npos)
+    {
+        while (lineBreakPos != std::string::npos)
+        {
+            text.insert(lineBreakPos, resetCode);
+            lineBreakPos += resetCode.size();
+            text.insert(lineBreakPos + 1, textColor);
+            lineBreakPos += textColor.size();
+
+            lineBreakPos = text.find('\n', lineBreakPos);
+        }
+    }
 }
