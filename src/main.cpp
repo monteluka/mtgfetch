@@ -31,13 +31,34 @@ void loadCardInfo(const c4::yml::Tree& card,
     }
 }
 
-int main()
+std::string prepareInput(const int& argc, char* argv[])
 {
+    if (argc < 2)
+    {
+        std::cerr << "No name of card entered!" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    std::string cleanInput {};
+
+    // add args to string
+    for (int i {1}; i < argc; ++i)
+    {
+        cleanInput += argv[i];
+        cleanInput += "%20";
+    }
+    cleanInput.erase(cleanInput.size() - 3, 3);
+    return cleanInput;
+}
+
+int main(int argc, char* argv[])
+{
+    const std::string cardSearchName {prepareInput(argc, argv)};
+
     httplib::Client cli {"https://api.scryfall.com"};
     cli.set_ca_cert_path("", "/etc/ssl/certs");
-
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=blasphemous-edict", headers)};
+    auto res {cli.Get("/cards/named?fuzzy=" + cardSearchName, headers)};
 
     c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
 
