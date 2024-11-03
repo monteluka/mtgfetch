@@ -76,6 +76,7 @@ int main(int argc, char* argv[])
     }
 
     const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
+    const int fillerSpace {manaSymbol.size() == 19 ? 39 : 43};
     for (size_t i = 0; i < largestBuffer; i++)
     {
         if (i < manaSymbol.size())
@@ -84,7 +85,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            std::cout << ((manaSymbol[0].size() > 40) ? std::string(43, ' ') : std::string(39, ' '));
+            std::cout << std::string(fillerSpace, ' ');
         }
 
         if (i < cardInformation.size())

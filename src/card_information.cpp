@@ -59,7 +59,7 @@ void appendKeyVal(std::vector<std::string>& information,
                   const int& depth)
 {
     size_t beginning {}, position {}, count {};
-    const int space {static_cast<int>(depth * configuration.getIndentLength() + keyValNode.key().size() + 2)};
+    const int space {static_cast<int>((depth * configuration.getIndentLength()) + keyValNode.key().size() + 2)};
     bool firstInstance {true};
 
     std::string value {keyValNode.val().str, keyValNode.val().len};
@@ -429,7 +429,6 @@ inline void addColorToText(std::string& text, const std::string& textColor)
             lineBreakPos += resetCode.size();
             text.insert(lineBreakPos + 1, textColor);
             lineBreakPos += textColor.size();
-
             lineBreakPos = text.find('\n', lineBreakPos);
         }
     }
