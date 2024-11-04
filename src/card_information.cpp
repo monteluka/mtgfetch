@@ -1,8 +1,7 @@
 #include "../include/card_information.h"
-#include <iostream>
 #include <unordered_set>
 
-bool readNode(std::vector<std::string>& information,
+void readNode(std::vector<std::string>& information,
               const ryml::Tree& card,
               const c4::yml::ConstNodeRef& configNode,
               const Configuration& configuration)
@@ -23,20 +22,22 @@ bool readNode(std::vector<std::string>& information,
     else
     {
         --depth;
-        for (const c4::yml::ConstNodeRef child : configNode)
+        if (configNode.has_children())
         {
-            readNode(information, card, child, configuration);
+            for (const c4::yml::ConstNodeRef& child : configNode)
+            {
+                readNode(information, card, child, configuration);
+            }
         }
-        return false;
+        return;
     }
 
-
+    // item in config does not exist in card tree
     if (!nodeExists(card, key))
     {
         --depth;
-        return false;
+        return;
     }
-
 
     info += std::string(depth * configuration.getIndentLength(), ' ') + cleanKey(key, configuration);
 
@@ -46,10 +47,9 @@ bool readNode(std::vector<std::string>& information,
     }
     else if (el.is_seq()) { appendSequence(information, el, configNode, info, configuration, depth); }
     else if (el.is_map()) { appendMap(information, el, configNode, info, configuration); }
+    // in case a non keyval/seq/map node is found then do nothing
     else {}
     --depth;
-
-    return true;
 }
 
 void appendKeyVal(std::vector<std::string>& information,
@@ -59,11 +59,12 @@ void appendKeyVal(std::vector<std::string>& information,
                   const int& depth)
 {
     size_t beginning {}, position {}, count {};
+    // the 2 is to account for the ": " that goes after the key in the output
     const int space {static_cast<int>((depth * configuration.getIndentLength()) + keyValNode.key().size() + 2)};
     bool firstInstance {true};
 
     std::string value {keyValNode.val().str, keyValNode.val().len};
-    if (value.empty() || value == "Null") return;
+    if (value.empty() || value == "null") return;
     fitValue(value, configuration.getTerminalWidth(), space);
     cleanValue(value, configuration);
 
@@ -97,7 +98,10 @@ void appendKeyVal(std::vector<std::string>& information,
 
 void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
 {
+    // the size of two small symbols put together is 40 characters wide and add 3 for spacing in between symbol & text
+    // since this is the widest amount of space a symbol can be, we use it for the length
     constexpr int manaSymbolLength {43};
+    // don't bother trying to fit anything if terminal is too small or if outputting to file
     if (terminalWidth <= manaSymbolLength + keyWidth) return;
     const int maxStringLength {terminalWidth - (manaSymbolLength + keyWidth)};
 
@@ -121,6 +125,7 @@ void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
 
 inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const int& maxStringLength)
 {
+    // add a newline character at first space character found before maxStringLength
     while (end - start > maxStringLength)
     {
         const size_t breakPos {value.rfind(' ', start + maxStringLength)};
@@ -152,8 +157,8 @@ void appendSequence(std::vector<std::string>& information,
             cleanValue(val, configuration);
             info += val;
         }
-        const size_t pos = info.find_last_of(',');
-        info.erase(pos, std::string::npos);
+        const size_t pos = info.rfind(',', info.size());
+        info.erase(pos);
         information.push_back(info);
     }
     else
@@ -331,7 +336,8 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
                 // check to see if the next combination is "ID"
                 else if (key.substr(nextLetter, 2) == "id")
                 {
-                    key.replace(nextLetter, 2, "ID");
+                    key[nextLetter] = static_cast<char>(std::toupper(key[nextLetter]));
+                    key[nextLetter + 1] = static_cast<char>(std::toupper(key[nextLetter + 1]));
                 }
                 // 3 letter combination & "ID" not found so capitalize only first letter after ' '
                 else
