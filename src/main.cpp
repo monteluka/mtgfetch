@@ -51,20 +51,24 @@ std::string prepareInput(const int& argc, char* argv[])
     return cleanInput;
 }
 
+httplib::Result getResult(const std::string& cardSearchName)
+{
+    httplib::Client cli {"https://api.scryfall.com"};
+    cli.set_ca_cert_path("", "/etc/ssl/certs");
+    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
+    return cli.Get("/cards/named?fuzzy=" + cardSearchName, headers);
+}
+
 int main(int argc, char* argv[])
 {
     // get card name that user entered from terminal
     const std::string cardSearchName {prepareInput(argc, argv)};
-
     // open config and read contents
     const Configuration configuration;
+    // get card details from scryfall api
+    const httplib::Result res {getResult(cardSearchName)};
 
-    httplib::Client cli {"https://api.scryfall.com"};
-    cli.set_ca_cert_path("", "/etc/ssl/certs");
-    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    auto res {cli.Get("/cards/named?fuzzy=" + cardSearchName, headers)};
-
-    c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
+    const c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
 
     std::vector<std::string> cardInformation {};
     std::vector<std::string> manaSymbol {};
@@ -72,7 +76,7 @@ int main(int argc, char* argv[])
     loadCardInfo(card, cardInformation, configuration);
     if (!loadManaSymbol(manaSymbol, card, configuration))
     {
-        std::cout << "ERROR LOADING MANA SYMBOL" << std::endl;
+        std::cerr << "ERROR LOADING MANA SYMBOL" << std::endl;
         return -1;
     }
 
