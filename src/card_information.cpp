@@ -422,8 +422,10 @@ inline bool nodeExists(const c4::yml::ConstNodeRef& card, const c4::csubstr& key
 
 inline void addColorToText(std::string& text, const std::string& textColor)
 {
-    const std::string resetCode {"\033[0m"};
+    // in case an empty text color was added then return
+    if (textColor.empty()) return;
 
+    const std::string resetCode {"\033[0m"};
     text.insert(0, textColor);
     text.append(resetCode);
 

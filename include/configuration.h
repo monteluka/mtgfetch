@@ -27,7 +27,8 @@ private:
     std::string m_valTextColor;
     c4::yml::Tree m_configTree {};
 
-    std::string findConfigFile();
+    static std::string findConfigFile();
+    static std::string validTextColorCode(c4::csubstr color);
 };
 
 

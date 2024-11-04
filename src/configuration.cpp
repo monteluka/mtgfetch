@@ -28,29 +28,29 @@ Configuration::Configuration()
 
     // check if options values are set
     if (const c4::yml::ConstNodeRef colorEnabledNode = m_configTree["options"]["color"]["enabled"];
-        colorEnabledNode.id() != c4::yml::NONE)
+        colorEnabledNode.id() != c4::yml::NONE && colorEnabledNode.is_keyval())
     {
         std::string boolRes {colorEnabledNode.val().str, colorEnabledNode.val().len};
         m_colorEnabled = (boolRes == "true");
     }
     if (const c4::yml::ConstNodeRef setKeyColorNode = m_configTree["options"]["color"]["set_key_color"];
-        setKeyColorNode.id() != c4::yml::NONE)
+        setKeyColorNode.id() != c4::yml::NONE && setKeyColorNode.is_keyval())
     {
-        m_keyTextColor = std::string {setKeyColorNode.val().str, setKeyColorNode.val().len};
+        m_keyTextColor = validTextColorCode(setKeyColorNode.val());
     }
     if (const c4::yml::ConstNodeRef setValColorNode = m_configTree["options"]["color"]["set_val_color"];
-        setValColorNode.id() != c4::yml::NONE)
+        setValColorNode.id() != c4::yml::NONE && setValColorNode.is_keyval())
     {
-        m_valTextColor = std::string {setValColorNode.val().str, setValColorNode.val().len};
+        m_valTextColor = validTextColorCode(setValColorNode.val());
     }
     if (const c4::yml::ConstNodeRef imageEnabledNode = m_configTree["options"]["image"]["enabled"];
-        imageEnabledNode.id() != c4::yml::NONE)
+        imageEnabledNode.id() != c4::yml::NONE && imageEnabledNode.is_keyval())
     {
         std::string boolRes {imageEnabledNode.val().str, imageEnabledNode.val().len};
         m_imageEnabled = (boolRes == "true");
     }
     if (const c4::yml::ConstNodeRef indentLengthNode = m_configTree["options"]["formatting"]["indent_length"];
-        indentLengthNode.id() != c4::yml::NONE)
+        indentLengthNode.id() != c4::yml::NONE && indentLengthNode.is_keyval())
     {
         std::string numberRes {indentLengthNode.val().str, indentLengthNode.val().len};
         m_indentLength = std::stoi(numberRes);
@@ -60,5 +60,24 @@ Configuration::Configuration()
 std::string Configuration::findConfigFile()
 {
     if (std::filesystem::exists("../presets/config.yaml")) return "../presets/config.yaml";
-    std::cerr << "Could not find config file" << std::endl;
+    return "null";
+}
+
+std::string Configuration::validTextColorCode(const c4::csubstr color)
+{
+    const std::string keyTextColorString {std::string(color.str, color.len)};
+    bool validColorCode {false};
+    if (keyTextColorString.size() <= 3 && !keyTextColorString.empty())
+    {
+        validColorCode = true;
+        for (const char& number : keyTextColorString)
+        {
+            if (!std::isdigit(number))
+            {
+                validColorCode = false;
+                break;
+            }
+        }
+    }
+    return validColorCode ? "\033[1;38;5;" + keyTextColorString + 'm' : "";
 }
