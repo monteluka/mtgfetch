@@ -33,11 +33,7 @@ void loadCardInfo(const c4::yml::Tree& card,
 
 std::string prepareInput(const int& argc, char* argv[])
 {
-    if (argc < 2)
-    {
-        std::cerr << "No name of card entered!" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    if (argc < 2) throw std::runtime_error("Error: No card name entered");
 
     std::string cleanInput {};
 
@@ -47,7 +43,7 @@ std::string prepareInput(const int& argc, char* argv[])
         cleanInput += argv[i];
         cleanInput += "%20";
     }
-    cleanInput.erase(cleanInput.size() - 3, 3);
+    cleanInput.erase(cleanInput.size() - 3);
     return cleanInput;
 }
 
@@ -59,14 +55,41 @@ httplib::Result getResult(const std::string& cardSearchName)
     return cli.Get("/cards/named?fuzzy=" + cardSearchName, headers);
 }
 
-int main(int argc, char* argv[])
+int main(const int argc, char* argv[]) try
 {
     // get card name that user entered from terminal
-    const std::string cardSearchName {prepareInput(argc, argv)};
+    std::string cardSearchName {prepareInput(argc, argv)};
     // open config and read contents
     const Configuration configuration;
     // get card details from scryfall api
     const httplib::Result res {getResult(cardSearchName)};
+
+    // make sure we were able to make a connection to the server
+    if (!res) throw std::runtime_error("Error: Could not establish connection with the server for card info");
+    // make sure we got a valid response back
+    if (res->status != 200)
+    {
+        if (res->status == 404)
+        {
+            // remove "%20" from string and re-add space character
+            size_t repeatPos = cardSearchName.find("%20");
+            while (repeatPos < std::string::npos)
+            {
+                cardSearchName.erase(repeatPos, 3);
+                cardSearchName.insert(repeatPos, " ");
+                repeatPos = cardSearchName.find("%20");
+            }
+            throw std::runtime_error(
+                "Error: Could not find information on card with name \"" + cardSearchName +
+                "\"\nMake sure card name was entered correctly");
+        }
+        if (res->status == 429)
+        {
+            throw std::runtime_error(
+                "Error: Too many requests\nPlease wait a few minutes and try again.");
+        }
+        throw std::runtime_error("Error: Did not get valid info for card from server");
+    }
 
     const c4::yml::Tree card {c4::yml::parse_json_in_arena(c4::to_csubstr(res->body))};
 
@@ -74,11 +97,7 @@ int main(int argc, char* argv[])
     std::vector<std::string> manaSymbol {};
 
     loadCardInfo(card, cardInformation, configuration);
-    if (!loadManaSymbol(manaSymbol, card, configuration))
-    {
-        std::cerr << "ERROR LOADING MANA SYMBOL" << std::endl;
-        return -1;
-    }
+    if (!loadManaSymbol(manaSymbol, card, configuration)) throw std::runtime_error("Failed to load mana symbol");
 
     const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
     const int fillerSpace {manaSymbol.size() == 19 ? 39 : 43};
@@ -102,4 +121,9 @@ int main(int argc, char* argv[])
     }
 
     return 0;
+}
+catch (std::runtime_error& e)
+{
+    std::cerr << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

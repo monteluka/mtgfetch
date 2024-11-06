@@ -22,9 +22,9 @@ private:
     bool m_colorEnabled {false};
     bool m_imageEnabled {false};
     int m_indentLength {2};
-    int m_terminalWidth {};
-    std::string m_keyTextColor;
-    std::string m_valTextColor;
+    int m_terminalWidth {0};
+    std::string m_keyTextColor {};
+    std::string m_valTextColor {};
     c4::yml::Tree m_configTree {};
 
     static std::string findConfigFile();

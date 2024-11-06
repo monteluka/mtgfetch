@@ -22,9 +22,31 @@ Configuration::Configuration()
     {
         while (configFile.get(character)) configContents += character;
     }
+    else
+    {
+        throw std::runtime_error("Error: Could not open config file at " + configFilePath);
+    }
     configFile.close();
 
     m_configTree = {c4::yml::parse_in_arena(c4::to_csubstr(configContents))};
+
+    // check if configTree is valid
+    if (!m_configTree.is_map(m_configTree.root_id()))
+    {
+        throw std::runtime_error(
+            "Error: No keys in config file\nUnable to parse contents.");
+    }
+    // check if modules section exists in config file
+    if (m_configTree.find_child(m_configTree.root_id(), "modules") == c4::yml::NONE)
+    {
+        throw std::runtime_error("Error: No \"modules\" section found in config file");
+    }
+    // make sure modules section has values
+    if (!m_configTree["modules"].has_children())
+    {
+        throw std::runtime_error(
+            "Error: \"Modules\" section in config file is empty.\nPlease add card info keys that you want in output.");
+    }
 
     // check if options values are set
     if (const c4::yml::ConstNodeRef colorEnabledNode = m_configTree["options"]["color"]["enabled"];
@@ -60,7 +82,7 @@ Configuration::Configuration()
 std::string Configuration::findConfigFile()
 {
     if (std::filesystem::exists("../presets/config.yaml")) return "../presets/config.yaml";
-    return "null";
+    throw std::runtime_error("Error: Config File not found");
 }
 
 std::string Configuration::validTextColorCode(const c4::csubstr color)

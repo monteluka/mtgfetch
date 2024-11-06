@@ -3,8 +3,8 @@ options:
     indent_length: 3
   color:
     enabled: true
-    set_key_color: "\e[1;38;5;13m"
-    set_val_color: "\e[1;38;5;15m"
+    set_key_color: 13
+    set_val_color: 15
   image:
     enabled: false
 
