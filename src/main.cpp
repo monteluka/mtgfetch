@@ -1,5 +1,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
+#include <httplib.h>
 #include <iostream>
 #include <ryml.hpp>
 // needed since we parse information from std::string
@@ -7,7 +8,6 @@
 #include "../include/card_information.h"
 #include "../include/configuration.h"
 #include "../include/mana_symbol.h"
-#include "../lib/httplib.h"
 
 void loadCardInfo(const c4::yml::Tree& card,
                   std::vector<std::string>& cardInformation,
