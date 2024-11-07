@@ -24,21 +24,12 @@ function(fetch_library library_name repo_url repo_default_branch)
             GIT_SHALLOW FALSE  # ensure submodules are checked out
     )
     FetchContent_MakeAvailable(${library_name})
-endfunction()
+endfunction(fetch_library)
 
 # Add cpp-httplib library for making API requests
 fetch_library(httplib https://github.com/yhirose/cpp-httplib.git master)
 # Add ryml library for parsing JSON & YAML
 fetch_library(ryml https://github.com/biojppm/rapidyaml.git master)
-
-# Use the library with debug symbols when building in debug mode
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Configuring for Debug build")
-    set(ZLIB_LIBRARY "/usr/lib64/libz.so")
-    set(ZLIB_INCLUDE_DIR "/usr/include")
-    set(OPENSSL_ROOT_DIR "../debugopenssl")
-    set(OPENSSL_LIBRARIES "../debugopenssl/lib64")
-endif ()
 
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
