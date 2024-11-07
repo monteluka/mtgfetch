@@ -1,8 +1,10 @@
 #ifndef CARD_INFORMATION_H
 #define CARD_INFORMATION_H
-#include <vector>
+
+#include <ryml.hpp>
+#include <ryml_std.hpp>
 #include <string>
-#include "../lib/rapidyaml-0.7.2.hpp"
+#include <vector>
 #include "../include/configuration.h"
 
 void readNode(std::vector<std::string>& information,

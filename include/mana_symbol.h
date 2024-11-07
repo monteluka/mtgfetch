@@ -1,9 +1,10 @@
 #ifndef MANA_SYMBOL_H
 #define MANA_SYMBOL_H
 
+#include <ryml.hpp>
+#include <ryml_std.hpp>
 #include <string>
 #include <vector>
-#include "../lib/rapidyaml-0.7.2.hpp"
 #include "../include/configuration.h"
 
 std::vector<std::string> getColorIdentity(const ryml::Tree& card);

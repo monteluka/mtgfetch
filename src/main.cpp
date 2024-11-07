@@ -1,12 +1,13 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
-#define RYML_SINGLE_HDR_DEFINE_NOW
 
 #include <iostream>
-#include "../lib/httplib.h"
-#include "../lib/rapidyaml-0.7.2.hpp"
+#include <ryml.hpp>
+// needed since we parse information from std::string
+#include <ryml_std.hpp>
 #include "../include/card_information.h"
 #include "../include/configuration.h"
 #include "../include/mana_symbol.h"
+#include "../lib/httplib.h"
 
 void loadCardInfo(const c4::yml::Tree& card,
                   std::vector<std::string>& cardInformation,

@@ -1,7 +1,9 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
-#include "../lib/rapidyaml-0.7.2.hpp"
 
+#include <ryml.hpp>
+#include <ryml_std.hpp>
+#include <string>
 
 class Configuration
 {
