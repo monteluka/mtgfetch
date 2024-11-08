@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.28.2)
-project(mtgcli)
+project(mtgfetch)
 
 set(CMAKE_CXX_STANDARD 17)
 
+message(STATUS "PROJECT NAME: ${PROJECT_NAME}")
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 # Function to fetch 3rd party libraries from a git repo
@@ -22,6 +23,7 @@ function(fetch_library library_name repo_url repo_default_branch)
             GIT_REPOSITORY ${repo_url}
             GIT_TAG ${${library_name_upper}_BRANCH_NAME}
             GIT_SHALLOW FALSE  # ensure submodules are checked out
+            EXCLUDE_FROM_ALL TRUE # needed so that httplib and ryml aren't a part of the project install
     )
     FetchContent_MakeAvailable(${library_name})
 endfunction(fetch_library)
@@ -42,4 +44,9 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/card_information.h
         include/configuration.h)
 
-target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto httplib::httplib ryml::ryml)
+target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto httplib::httplib ryml::ryml)
+
+# Installation of mtgfetch
+include(GNUInstallDirs)
+message(STATUS "DESTINATION FOR BIN: ${CMAKE_INSTALL_BINDIR}")
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
