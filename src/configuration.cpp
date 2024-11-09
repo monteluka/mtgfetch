@@ -57,7 +57,7 @@ Configuration::Configuration()
         {
             if (const c4::yml::ConstNodeRef colorNode {configNode["color"]}; colorNode.is_map())
             {
-                if (!colorNode.find_child("enabled").invalid())
+                if (!colorNode.find_child("enabled").invalid() && colorNode["enabled"].is_keyval())
                 {
                     std::string boolRes {colorNode["enabled"].val().str, colorNode["enabled"].val().len};
                     // make the string lowercase
@@ -65,11 +65,11 @@ Configuration::Configuration()
                                    [](const char& c) { return std::tolower(c); });
                     m_colorEnabled = (boolRes == "true");
                 }
-                if (!colorNode.find_child("set_key_color").invalid())
+                if (!colorNode.find_child("set_key_color").invalid() && colorNode["set_key_color"].is_keyval())
                 {
                     m_keyTextColor = validTextColorCode(colorNode["set_key_color"].val());
                 }
-                if (!colorNode.find_child("set_val_color").invalid())
+                if (!colorNode.find_child("set_val_color").invalid() && colorNode["set_val_color"].is_keyval())
                 {
                     m_valTextColor = validTextColorCode(colorNode["set_val_color"].val());
                 }
@@ -79,7 +79,7 @@ Configuration::Configuration()
         {
             if (const c4::yml::ConstNodeRef imageNode {configNode["image"]}; imageNode.is_map())
             {
-                if (!imageNode.find_child("enabled").invalid())
+                if (!imageNode.find_child("enabled").invalid() && imageNode["enabled"].is_keyval())
                 {
                     std::string boolRes {imageNode["enabled"].val().str, imageNode["enabled"].val().len};
                     // make the string lowercase
@@ -93,7 +93,8 @@ Configuration::Configuration()
         {
             if (const c4::yml::ConstNodeRef formattingNode {configNode["formatting"]}; formattingNode.is_map())
             {
-                if (!formattingNode.find_child("indent_length").invalid())
+                if (!formattingNode.find_child("indent_length").invalid() &&
+                    formattingNode["indent_length"].is_keyval())
                 {
                     std::string numberRes {
                         formattingNode["indent_length"].val().str,
