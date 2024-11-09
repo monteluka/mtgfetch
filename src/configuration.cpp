@@ -60,6 +60,9 @@ Configuration::Configuration()
                 if (!colorNode.find_child("enabled").invalid())
                 {
                     std::string boolRes {colorNode["enabled"].val().str, colorNode["enabled"].val().len};
+                    // make the string lowercase
+                    std::transform(boolRes.begin(), boolRes.end(), boolRes.begin(),
+                                   [](const char& c) { return std::tolower(c); });
                     m_colorEnabled = (boolRes == "true");
                 }
                 if (!colorNode.find_child("set_key_color").invalid())
@@ -79,6 +82,9 @@ Configuration::Configuration()
                 if (!imageNode.find_child("enabled").invalid())
                 {
                     std::string boolRes {imageNode["enabled"].val().str, imageNode["enabled"].val().len};
+                    // make the string lowercase
+                    std::transform(boolRes.begin(), boolRes.end(), boolRes.begin(),
+                                   [](const char& c) { return std::tolower(c); });
                     m_imageEnabled = (boolRes == "true");
                 }
             }
@@ -93,7 +99,8 @@ Configuration::Configuration()
                         formattingNode["indent_length"].val().str,
                         formattingNode["indent_length"].val().len
                     };
-                    m_indentLength = std::stoi(numberRes);
+                    try { m_indentLength = std::stoi(numberRes); }
+                    catch (std::invalid_argument& e) {} // continue
                 }
             }
         }
