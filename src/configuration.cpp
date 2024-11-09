@@ -48,34 +48,55 @@ Configuration::Configuration()
             "Error: \"Modules\" section in config file is empty.\nPlease add card info keys that you want in output.");
     }
 
-    // check if options values are set
-    if (const c4::yml::ConstNodeRef colorEnabledNode = m_configTree["options"]["color"]["enabled"];
-        colorEnabledNode.id() != c4::yml::NONE && colorEnabledNode.is_keyval())
+    // set configuration class options from config tree
+    if (c4::yml::ConstNodeRef configNode = m_configTree.crootref(); !configNode.find_child("options").invalid())
     {
-        std::string boolRes {colorEnabledNode.val().str, colorEnabledNode.val().len};
-        m_colorEnabled = (boolRes == "true");
-    }
-    if (const c4::yml::ConstNodeRef setKeyColorNode = m_configTree["options"]["color"]["set_key_color"];
-        setKeyColorNode.id() != c4::yml::NONE && setKeyColorNode.is_keyval())
-    {
-        m_keyTextColor = validTextColorCode(setKeyColorNode.val());
-    }
-    if (const c4::yml::ConstNodeRef setValColorNode = m_configTree["options"]["color"]["set_val_color"];
-        setValColorNode.id() != c4::yml::NONE && setValColorNode.is_keyval())
-    {
-        m_valTextColor = validTextColorCode(setValColorNode.val());
-    }
-    if (const c4::yml::ConstNodeRef imageEnabledNode = m_configTree["options"]["image"]["enabled"];
-        imageEnabledNode.id() != c4::yml::NONE && imageEnabledNode.is_keyval())
-    {
-        std::string boolRes {imageEnabledNode.val().str, imageEnabledNode.val().len};
-        m_imageEnabled = (boolRes == "true");
-    }
-    if (const c4::yml::ConstNodeRef indentLengthNode = m_configTree["options"]["formatting"]["indent_length"];
-        indentLengthNode.id() != c4::yml::NONE && indentLengthNode.is_keyval())
-    {
-        std::string numberRes {indentLengthNode.val().str, indentLengthNode.val().len};
-        m_indentLength = std::stoi(numberRes);
+        configNode = configNode["options"];
+        if (!configNode.is_map()) return;
+        if (!configNode.find_child("color").invalid())
+        {
+            if (const c4::yml::ConstNodeRef colorNode {configNode["color"]}; colorNode.is_map())
+            {
+                if (!colorNode.find_child("enabled").invalid())
+                {
+                    std::string boolRes {colorNode["enabled"].val().str, colorNode["enabled"].val().len};
+                    m_colorEnabled = (boolRes == "true");
+                }
+                if (!colorNode.find_child("set_key_color").invalid())
+                {
+                    m_keyTextColor = validTextColorCode(colorNode["set_key_color"].val());
+                }
+                if (!colorNode.find_child("set_val_color").invalid())
+                {
+                    m_valTextColor = validTextColorCode(colorNode["set_val_color"].val());
+                }
+            }
+        }
+        if (!configNode.find_child("image").invalid())
+        {
+            if (const c4::yml::ConstNodeRef imageNode {configNode["image"]}; imageNode.is_map())
+            {
+                if (!imageNode.find_child("enabled").invalid())
+                {
+                    std::string boolRes {imageNode["enabled"].val().str, imageNode["enabled"].val().len};
+                    m_imageEnabled = (boolRes == "true");
+                }
+            }
+        }
+        if (!configNode.find_child("formatting").invalid())
+        {
+            if (const c4::yml::ConstNodeRef formattingNode {configNode["formatting"]}; formattingNode.is_map())
+            {
+                if (!formattingNode.find_child("indent_length").invalid())
+                {
+                    std::string numberRes {
+                        formattingNode["indent_length"].val().str,
+                        formattingNode["indent_length"].val().len
+                    };
+                    m_indentLength = std::stoi(numberRes);
+                }
+            }
+        }
     }
 }
 
