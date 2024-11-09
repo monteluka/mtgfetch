@@ -55,6 +55,7 @@ set(DEBUG_ASCII_PATH "${CMAKE_SOURCE_DIR}/images/ascii/")
 set(RELEASE_ASCII_PATH "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/symbols")
 
 # Set preprocessor definitions
+target_compile_definitions(${PROJECT_NAME} PRIVATE PROJECT_VERSION="${PROJECT_VERSION}")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE IS_DEBUG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${DEBUG_ASCII_PATH}")

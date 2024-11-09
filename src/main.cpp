@@ -9,6 +9,21 @@
 #include "../include/configuration.h"
 #include "../include/mana_symbol.h"
 
+void help()
+{
+    std::cout << "Usage: mtgfetch CARD-NAME" << '\n';
+    std::cout << "Usage: mtgfetch OPTION" << '\n';
+    std::cout << "mtgfetch fetches information on a single Magic: The Gathering card and displays it to terminal" << '\n';
+    std::cout << '\n';
+    std::cout << "  -h, --help       shows this message and exit" << '\n';
+    std::cout << "  -v, --version    shows version information and exits" << std::endl;
+}
+
+inline void version()
+{
+    std::cout << "mtgfetch " << PROJECT_VERSION << std::endl;
+}
+
 void loadCardInfo(const c4::yml::Tree& card,
                   std::vector<std::string>& cardInformation,
                   const Configuration& configuration)
@@ -32,16 +47,47 @@ void loadCardInfo(const c4::yml::Tree& card,
     }
 }
 
-std::string prepareInput(const int& argc, char* argv[])
+inline bool compareStringIgnCase(const char* const key, const char* const option)
+{
+    return strcasecmp(key, option) == 0;
+}
+
+int parseArguments(const int& argc, char* argv[])
 {
     if (argc < 2) throw std::runtime_error("Error: No card name entered");
+    int positionOfCardName {0};
+
+    // since the only options right now exit after being run, only the first item passed in is checked
+    if (const char* currentArg {argv[1]}; currentArg[0] == '-')
+    {
+        if (compareStringIgnCase(currentArg, "-h") || compareStringIgnCase(currentArg, "--help"))
+        {
+            help();
+        }
+        else if (compareStringIgnCase(currentArg, "-v") || compareStringIgnCase(currentArg, "--version"))
+        {
+            version();
+        }
+        else { throw std::runtime_error("Error: Unknown option: " + std::string(currentArg)); }
+    }
+    else
+    {
+        positionOfCardName = 1;
+    }
+
+    return positionOfCardName;
+}
+
+std::string prepareInput(const int& argc, char* argv[], int& currentElement)
+{
+    if (currentElement > argc) throw std::runtime_error("Error: No card name entered");
 
     std::string cleanInput {};
 
     // add args to string
-    for (int i {1}; i < argc; ++i)
+    for (; currentElement < argc; ++currentElement)
     {
-        cleanInput += argv[i];
+        cleanInput += argv[currentElement];
         cleanInput += "%20";
     }
     cleanInput.erase(cleanInput.size() - 3);
@@ -58,8 +104,11 @@ httplib::Result getResult(const std::string& cardSearchName)
 
 int main(const int argc, char* argv[]) try
 {
+    // parse arguments first if any
+    int currentElement = parseArguments(argc, argv);
+    if (currentElement == 0) return 0;
     // get card name that user entered from terminal
-    std::string cardSearchName {prepareInput(argc, argv)};
+    std::string cardSearchName {prepareInput(argc, argv, currentElement)};
     // open config and read contents
     const Configuration configuration;
     // get card details from scryfall api
