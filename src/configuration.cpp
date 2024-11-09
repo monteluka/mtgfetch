@@ -81,8 +81,16 @@ Configuration::Configuration()
 
 std::string Configuration::findConfigFile()
 {
-    if (std::filesystem::exists("../presets/config.yaml")) return "../presets/config.yaml";
-    throw std::runtime_error("Error: Config File not found");
+#ifdef IS_DEBUG
+    const std::string configDir {"../presets/config.yaml"};
+    if (std::filesystem::exists(configDir)) return configDir;
+#else
+    std::string configDir {std::getenv("HOME")};
+    if (configDir.empty()) throw std::runtime_error("Error: \"HOME\" environment variable can't be found");
+    configDir += "/.config/mtgfetch/config.yaml";
+    if (std::filesystem::exists(configDir)) return configDir;
+#endif
+    throw std::runtime_error("Error: Config File not found\n" + configDir + " does not exist.");
 }
 
 std::string Configuration::validTextColorCode(const c4::csubstr color)

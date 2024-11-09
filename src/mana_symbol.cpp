@@ -42,7 +42,7 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& c
     {
         if (auto it = colorFile.find(color[0]); it != colorFile.end())
         {
-            std::string filename {"../images/ascii/" + it->second + extension};
+            std::string filename {ASCII_ART_PATH + it->second + extension};
             std::ifstream asciiArt {filename, std::ifstream::in};
             if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
             asciiArt.close();

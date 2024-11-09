@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.28.2)
-project(mtgfetch)
+project(mtgfetch
+        VERSION 0.0.1
+        LANGUAGES CXX
+        DESCRIPTION "Magic the Gathering card information fetcher")
 
 set(CMAKE_CXX_STANDARD 17)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif ()
 
 message(STATUS "PROJECT NAME: ${PROJECT_NAME}")
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
@@ -44,9 +51,27 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/card_information.h
         include/configuration.h)
 
+set(DEBUG_ASCII_PATH "${CMAKE_SOURCE_DIR}/images/ascii/")
+set(RELEASE_ASCII_PATH "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/symbols")
+
+# Set preprocessor definitions
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IS_DEBUG)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${DEBUG_ASCII_PATH}")
+elseif (CMAKE_BUILD_TYPE STREQUAL "ReleasePackage")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${RELEASE_ASCII_PATH}/ascii/")
+else ()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="/usr/local/${RELEASE_ASCII_PATH}/ascii/")
+endif ()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto httplib::httplib ryml::ryml)
 
 # Installation of mtgfetch
 include(GNUInstallDirs)
 message(STATUS "DESTINATION FOR BIN: ${CMAKE_INSTALL_BINDIR}")
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+message(STATUS "DESTINATION FOR ASCII: ${RELEASE_ASCII_PATH}")
+install(
+        DIRECTORY "${CMAKE_SOURCE_DIR}/images/ascii"
+        DESTINATION "${RELEASE_ASCII_PATH}"
+)
