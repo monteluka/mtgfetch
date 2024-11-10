@@ -69,10 +69,28 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto httpl
 
 # Installation of mtgfetch
 include(GNUInstallDirs)
+# install the binary
 message(STATUS "DESTINATION FOR BIN: ${CMAKE_INSTALL_BINDIR}")
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+# install the ascii txt files that are used for mana symbols
 message(STATUS "DESTINATION FOR ASCII: ${RELEASE_ASCII_PATH}")
 install(
         DIRECTORY "${CMAKE_SOURCE_DIR}/images/ascii"
         DESTINATION "${RELEASE_ASCII_PATH}"
 )
+# install the preset configurations
+install(
+        DIRECTORY "${CMAKE_SOURCE_DIR}/presets"
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}"
+)
+# install a default configuration to user .config folder
+if (DEFINED ENV{HOME})
+    set(HOME_DIR $ENV{HOME})
+    install(
+            FILES "${CMAKE_SOURCE_DIR}/presets/default_config.yaml"
+            DESTINATION "${HOME_DIR}/.config/mtgfetch"
+            RENAME "config.yaml"
+    )
+else ()
+    message(WARNING "HOME environment variable is not set. Default config file will not be installed.")
+endif ()

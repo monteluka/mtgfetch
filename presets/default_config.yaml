@@ -1,39 +1,34 @@
 options:
   formatting:
-    indent_length: 3
+    indent_length: 2
   color:
     enabled: true
-    set_key_color: 13
+    set_key_color: 117
     set_val_color: 15
-  image:
-    enabled: false
 
 modules:
   - name
   - mana_cost
+  - type_line
   - card_faces:
       - object
       - name
       - mana_cost
       - type_line
       - oracle_text
-      - image_uris:
-          - small
-          - normal
+      - loyalty
       - power
       - toughness
-  - type_line
   - oracle_text
+  - loyalty
   - power
   - toughness
   - legalities:
       - commander
       - modern
-      - vintage
+      - standard
   - finishes
   - set_name
-  - reprint
-  - release_date
   - rarity
   - prices:
       - usd

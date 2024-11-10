@@ -110,7 +110,7 @@ Configuration::Configuration()
 std::string Configuration::findConfigFile()
 {
 #ifdef IS_DEBUG
-    const std::string configDir {"../presets/config.yaml"};
+    const std::string configDir {"../presets/default_config.yaml"};
     if (std::filesystem::exists(configDir)) return configDir;
 #else
     std::string configDir {std::getenv("HOME")};
