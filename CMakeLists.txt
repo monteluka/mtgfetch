@@ -63,10 +63,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE PROJECT_VERSION="${PROJECT_VE
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE IS_DEBUG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${DEBUG_ASCII_PATH}")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CONFIG_DIR_PATH="${CMAKE_SOURCE_DIR}/presets")
 elseif (CMAKE_BUILD_TYPE STREQUAL "ReleasePackage")
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="/usr/${RELEASE_ASCII_PATH}/ascii/")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CONFIG_DIR_PATH="/usr/${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/presets")
 else ()
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="/usr/local/${RELEASE_ASCII_PATH}/ascii/")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE CONFIG_DIR_PATH="/usr/local/${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/presets")
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto httplib::httplib ryml::ryml)

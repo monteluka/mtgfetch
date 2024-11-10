@@ -1,10 +1,12 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
+#include <filesystem>
 #include <httplib.h>
 #include <iostream>
 #include <ryml.hpp>
 // needed since we parse information from std::string
 #include <ryml_std.hpp>
+
 #include "../include/card_information.h"
 #include "../include/configuration.h"
 #include "../include/mana_symbol.h"
@@ -13,15 +15,48 @@ void help()
 {
     std::cout << "Usage: mtgfetch CARD-NAME" << '\n';
     std::cout << "Usage: mtgfetch OPTION" << '\n';
-    std::cout << "mtgfetch fetches information on a single Magic: The Gathering card and displays it to terminal" << '\n';
+    std::cout << "mtgfetch fetches information on a single Magic: The Gathering card and displays it to terminal" <<
+            '\n';
     std::cout << '\n';
-    std::cout << "  -h, --help       shows this message and exit" << '\n';
-    std::cout << "  -v, --version    shows version information and exits" << std::endl;
+    std::cout << "  -h, --help              shows this message and exit" << '\n';
+    std::cout << "  -v, --version           shows version information and exits" << '\n';
+    std::cout << "      --gen-config        generates a default configuration with popular modules enabled" << '\n';
+    std::cout << "      --gen-config-all    generates a configuration file with all modules enables" << std::endl;
 }
 
 inline void version()
 {
     std::cout << "mtgfetch " << PROJECT_VERSION << std::endl;
+}
+
+void generateConfig(const std::filesystem::path& src, const std::filesystem::path& destination)
+{
+    // check if src exists
+    if (!std::filesystem::exists(src))
+        throw std::runtime_error(
+            std::string("Error: Could not find preset files\nSearched at ") + std::string(src));
+
+    // check if a config file already exists
+    if (std::filesystem::exists(destination))
+    {
+        throw std::runtime_error("Error: Config file already exists.\nCannot generate new config.");
+    }
+    else
+    {
+        // config file location does not exist so make it
+        std::filesystem::create_directory(destination.parent_path());
+        std::filesystem::permissions(destination.parent_path(),
+                                     std::filesystem::perms::owner_all | std::filesystem::perms::group_read |
+                                     std::filesystem::perms::group_exec | std::filesystem::perms::others_read |
+                                     std::filesystem::perms::others_exec, std::filesystem::perm_options::add);
+    }
+
+    // copy the file from presets location to created directory
+    if (std::filesystem::copy_file(src, destination))
+    {
+        std::cout << "File successfully created at " << destination << std::endl;
+    }
+    else { throw std::runtime_error("Error: Could not create config file."); }
 }
 
 void loadCardInfo(const c4::yml::Tree& card,
@@ -67,6 +102,32 @@ int parseArguments(const int& argc, char* argv[])
         else if (compareStringIgnCase(currentArg, "-v") || compareStringIgnCase(currentArg, "--version"))
         {
             version();
+        }
+        else if (compareStringIgnCase(currentArg, "--gen-config"))
+        {
+            std::filesystem::path source {CONFIG_DIR_PATH};
+            source += "/default_config.yaml";
+#ifdef IS_DEBUG
+            std::filesystem::path destination {CONFIG_DIR_PATH};
+            destination += "default_config.yaml";
+#else
+            std::filesystem::path destination {std::getenv("HOME")};
+            destination += "/.config/mtgfetch/config.yaml";
+#endif
+            generateConfig(source, destination);
+        }
+        else if (compareStringIgnCase(currentArg, "--gen-config-all"))
+        {
+            std::filesystem::path source {CONFIG_DIR_PATH};
+            source += "/all_modules.yaml";
+#ifdef IS_DEBUG
+            std::filesystem::path destination {CONFIG_DIR_PATH};
+            destination += "all_modules.yaml";
+#else
+            std::filesystem::path destination {std::getenv("HOME")};
+            destination += "/.config/mtgfetch/config.yaml";
+#endif
+            generateConfig(source, destination);
         }
         else { throw std::runtime_error("Error: Unknown option: " + std::string(currentArg)); }
     }

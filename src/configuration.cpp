@@ -23,7 +23,8 @@ Configuration::Configuration()
     }
     else
     {
-        throw std::runtime_error("Error: Could not open config file at " + configFilePath);
+        throw std::runtime_error(
+            "Error: Could not open config file at " + configFilePath);
     }
     configFile.close();
 
@@ -118,7 +119,9 @@ std::string Configuration::findConfigFile()
     configDir += "/.config/mtgfetch/config.yaml";
     if (std::filesystem::exists(configDir)) return configDir;
 #endif
-    throw std::runtime_error("Error: Config File not found\n" + configDir + " does not exist.");
+    throw std::runtime_error(
+        "Error: Config File not found\n" + configDir + " does not exist." +
+        "\nTo generate a new config file, use --gen-config or --gen-config-all");
 }
 
 std::string Configuration::validTextColorCode(const c4::csubstr color)
