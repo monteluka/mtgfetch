@@ -10,6 +10,10 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif ()
 
+if (CMAKE_BUILD_TYPE STREQUAL "ReleasePackage")
+    set(CMAKE_INSTALL_PREFIX /usr)
+endif ()
+
 message(STATUS "PROJECT NAME: ${PROJECT_NAME}")
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -60,7 +64,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE IS_DEBUG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${DEBUG_ASCII_PATH}")
 elseif (CMAKE_BUILD_TYPE STREQUAL "ReleasePackage")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="${RELEASE_ASCII_PATH}/ascii/")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="/usr/${RELEASE_ASCII_PATH}/ascii/")
 else ()
     target_compile_definitions(${PROJECT_NAME} PRIVATE ASCII_ART_PATH="/usr/local/${RELEASE_ASCII_PATH}/ascii/")
 endif ()
@@ -83,14 +87,22 @@ install(
         DIRECTORY "${CMAKE_SOURCE_DIR}/presets"
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}"
 )
-# install a default configuration to user .config folder
-if (DEFINED ENV{HOME})
-    set(HOME_DIR $ENV{HOME})
-    install(
-            FILES "${CMAKE_SOURCE_DIR}/presets/default_config.yaml"
-            DESTINATION "${HOME_DIR}/.config/mtgfetch"
-            RENAME "config.yaml"
-    )
-else ()
-    message(WARNING "HOME environment variable is not set. Default config file will not be installed.")
+
+# package mtgfetch
+set(CPACK_PACKAGE_CONTACT "Monte <dmonterrosa@pm.me>")
+set(CPACK_PACKAGE_DESCRIPTION "mtgfetch is a tool to fetch information on a single Magic: The Gathering card and display it to the terminal")
+set(CPACK_GENERATOR "TGZ;")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${CMAKE_HOST_SYSTEM_PROCESSOR}")
+find_program(HAVE_RPMBUILD "rpmbuild")
+if (HAVE_RPMBUILD)
+    set(CPACK_GENERATOR "${CPACK_GENERATOR};RPM")
+    set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
 endif ()
+find_program(HAVE_DPKG "dpkg")
+if (HAVE_DPKG)
+    set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+    set(CPACK_DEBIAN_PACKAGE_SECTION, "utils")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+endif ()
+
+include(CPack)

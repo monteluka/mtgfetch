@@ -1,3 +1,11 @@
+options:
+  formatting:
+    indent_length: 2
+  color:
+    enabled: true
+    set_key_color: 117
+    set_val_color: 15
+
 modules:
   - all_parts:
       - component
