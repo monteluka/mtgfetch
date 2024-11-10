@@ -6,6 +6,10 @@ project(mtgfetch
 
 set(CMAKE_CXX_STANDARD 17)
 
+if(NOT LINUX)
+    message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}.\nCurrently mtgfetch only works on linux.")
+endif ()
+
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif ()
@@ -89,6 +93,12 @@ install(
 install(
         DIRECTORY "${CMAKE_SOURCE_DIR}/presets"
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}"
+)
+# install bash completions
+install(
+        FILES "${CMAKE_SOURCE_DIR}/completions/${CMAKE_PROJECT_NAME}.bash"
+        DESTINATION "/etc/bash_completion.d"
+        RENAME "${CMAKE_PROJECT_NAME}"
 )
 
 # package mtgfetch
