@@ -30,6 +30,7 @@ private:
     c4::yml::Tree m_configTree {};
 
     static std::string findConfigFile();
+
     static std::string validTextColorCode(c4::csubstr color);
 };
 

@@ -15,11 +15,11 @@ void help()
 {
     std::cout << "Usage: mtgfetch CARD-NAME" << '\n';
     std::cout << "Usage: mtgfetch OPTION" << '\n';
-    std::cout << "mtgfetch fetches information on a single Magic: The Gathering card and displays it to terminal" <<
-            '\n';
+    std::cout << "mtgfetch fetches information on a single Magic: The Gathering card and displays it to terminal" << '\n';
     std::cout << '\n';
     std::cout << "  -h, --help              shows this message and exit" << '\n';
     std::cout << "  -v, --version           shows version information and exits" << '\n';
+    std::cout << "  -r, --random            search for a random card" << '\n';
     std::cout << "      --gen-config        generates a default configuration with popular modules enabled" << '\n';
     std::cout << "      --gen-config-all    generates a configuration file with all modules enables" << std::endl;
 }
@@ -87,7 +87,7 @@ inline bool compareStringIgnCase(const char* const key, const char* const option
     return strcasecmp(key, option) == 0;
 }
 
-int parseArguments(const int& argc, char* argv[])
+int parseArguments(const int& argc, char* argv[], std::string& searchType)
 {
     if (argc < 2) throw std::runtime_error("Error: No card name entered");
     int positionOfCardName {0};
@@ -129,6 +129,11 @@ int parseArguments(const int& argc, char* argv[])
 #endif
             generateConfig(source, destination);
         }
+        else if (compareStringIgnCase(currentArg, "-r") || compareStringIgnCase(currentArg, "--random"))
+        {
+            searchType = "random";
+            positionOfCardName = 2;
+        }
         else { throw std::runtime_error("Error: Unknown option: " + std::string(currentArg)); }
     }
     else
@@ -139,41 +144,51 @@ int parseArguments(const int& argc, char* argv[])
     return positionOfCardName;
 }
 
-std::string prepareInput(const int& argc, char* argv[], int& currentElement)
+std::string prepareInput(const int& argc, char* argv[], int& currentElement, const std::string& searchType)
 {
     if (currentElement > argc) throw std::runtime_error("Error: No card name entered");
 
     std::string cleanInput {};
 
-    // add args to string
-    for (; currentElement < argc; ++currentElement)
+    if (searchType != "random")
     {
-        cleanInput += argv[currentElement];
-        cleanInput += "%20";
+        // add args to string
+        for (; currentElement < argc; ++currentElement)
+        {
+            cleanInput += argv[currentElement];
+            cleanInput += "%20";
+        }
+        cleanInput.erase(cleanInput.size() - 3);
     }
-    cleanInput.erase(cleanInput.size() - 3);
+
     return cleanInput;
 }
 
-httplib::Result getResult(const std::string& cardSearchName)
+httplib::Result getResult(const std::string& cardSearchName, const std::string& searchType)
 {
     httplib::Client cli {"https://api.scryfall.com"};
     cli.set_ca_cert_path("", "/etc/ssl/certs");
     const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
-    return cli.Get("/cards/named?fuzzy=" + cardSearchName, headers);
+    return cli.Get("/cards/" + searchType + cardSearchName, headers);
 }
 
 int main(const int argc, char* argv[]) try
 {
-    // parse arguments first if any
-    int currentElement = parseArguments(argc, argv);
+    // set the search type
+    std::string searchType {"named?fuzzy="};
+
+    // parse arguments if any
+    int currentElement = parseArguments(argc, argv, searchType);
     if (currentElement == 0) return 0;
+
     // get card name that user entered from terminal
-    std::string cardSearchName {prepareInput(argc, argv, currentElement)};
+    std::string cardSearchName {prepareInput(argc, argv, currentElement, searchType)};
+
     // open config and read contents
     const Configuration configuration;
+
     // get card details from scryfall api
-    const httplib::Result res {getResult(cardSearchName)};
+    const httplib::Result res {getResult(cardSearchName, searchType)};
 
     // make sure we were able to make a connection to the server
     if (!res) throw std::runtime_error("Error: Could not establish connection with the server for card info");
