@@ -74,7 +74,7 @@ bool addSingleSymbol(std::vector<std::string>& manaSymbol,
     {
         for (std::string line {}; std::getline(*currentFile, line);)
         {
-            manaSymbol.push_back(std::string(9, ' ') + line + std::string(11, ' '));
+            manaSymbol.push_back(std::string(10, ' ') + line + std::string(10, ' '));
         }
     }
     else
