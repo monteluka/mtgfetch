@@ -333,8 +333,9 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
                     key[nextLetter + 1] = static_cast<char>(std::toupper(key[nextLetter + 1]));
                     key[nextLetter + 2] = static_cast<char>(std::toupper(key[nextLetter + 2]));
                 }
+                // make sure that we are at the end of the string
                 // check to see if the next combination is "ID"
-                else if (key.substr(nextLetter, 2) == "id")
+                else if (nextLetter + 2 == key.size() && key.substr(nextLetter, 2) == "id")
                 {
                     key[nextLetter] = static_cast<char>(std::toupper(key[nextLetter]));
                     key[nextLetter + 1] = static_cast<char>(std::toupper(key[nextLetter + 1]));
