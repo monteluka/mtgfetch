@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28.2)
 project(mtgfetch
-        VERSION 0.0.1
+        VERSION 0.1
         LANGUAGES CXX
         DESCRIPTION "Magic the Gathering card information fetcher")
 

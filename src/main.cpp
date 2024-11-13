@@ -168,7 +168,9 @@ httplib::Result getResult(const std::string& cardSearchName, const std::string& 
 {
     httplib::Client cli {"https://api.scryfall.com"};
     cli.set_ca_cert_path("", "/etc/ssl/certs");
-    const httplib::Headers headers {{{"User-Agent, mtgfetch/0.1-a", "Accept, application/json"}}};
+    std::string userAgent {"User-Agent, mtgfetch/"};
+    userAgent += PROJECT_VERSION;
+    const httplib::Headers headers {{{userAgent, "Accept, application/json"}}};
     return cli.Get("/cards/" + searchType + cardSearchName, headers);
 }
 
