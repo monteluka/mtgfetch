@@ -6,12 +6,18 @@ project(mtgfetch
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(NOT LINUX)
+if (NOT LINUX)
     message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}.\nCurrently mtgfetch only works on linux.")
 endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
+endif ()
+
+# set compile flags if building release
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "-O3 -s -DNDEBUG -flto=auto")
+    message(STATUS "Running with the following compiler flags: ${CMAKE_CXX_FLAGS}")
 endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "ReleasePackage")
