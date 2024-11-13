@@ -103,8 +103,13 @@ install(
 # install bash completions
 install(
         FILES "${CMAKE_SOURCE_DIR}/completions/${CMAKE_PROJECT_NAME}.bash"
-        DESTINATION "/etc/bash_completion.d"
+        DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/bash_completion.d"
         RENAME "${CMAKE_PROJECT_NAME}"
+)
+# install license
+install(
+        FILES "${CMAKE_SOURCE_DIR}/LICENSE"
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${CMAKE_PROJECT_NAME}"
 )
 
 # package mtgfetch
