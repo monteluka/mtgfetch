@@ -48,6 +48,12 @@ First, download the .rpm file from the releases page
 - cd into the directory where the file was downloaded to
 - run `sudo apt install ./mtgfetch-0.1-x86_64.rpm`
 
+### Other Linux Distros
+
+There are archive files in the releases page that contain the executable and other files needed for the program to run.
+You can download the .zip or .tar.gz file and extract its contents. You can then move those contents over to
+`/usr` directory.
+
 ### From Source
 
 If you'd like to build from source, or if you run a linux distribution that doesn't support .deb or .rpm files, these
@@ -98,7 +104,7 @@ Run `sudo apt remove mtgfetch`
 
 Run `sudo dnf remove mtgfetch`
 
-### Other Linux Distro
+### If built from source
 
 Run the following commands. Make sure to double-check commands as we are deleting things as root.
 
@@ -141,9 +147,9 @@ has the following subsections.
 ### Modules
 
 The second section is called modules. It contains the names of the pieces of card information we can get. Since we are
-using Scryfall's api you can have a look at their docs [here](https://scryfall.com/docs/api/cards) to see what each label represents. If you are still
-confused on what some of the labels mean, then you should run the program using the config generated from
-`mtgfetch --gen-config-all` to see what each label outputs.
+using Scryfall's api you can have a look at their docs [here](https://scryfall.com/docs/api/cards) to see what each
+label represents. If you are still confused on what some of the labels mean, then you should run the program using the
+config generated from `mtgfetch --gen-config-all` to see what each label outputs.
 
 ### Customizing Order of Output
 
