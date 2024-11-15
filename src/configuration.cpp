@@ -100,8 +100,7 @@ Configuration::Configuration()
                         formattingNode["indent_length"].val().str,
                         formattingNode["indent_length"].val().len
                     };
-                    try { m_indentLength = std::stoi(numberRes); }
-                    catch (std::invalid_argument& e) {} // continue
+                    if(stringIsPositiveNum(numberRes) && numberRes.size() <= 2) m_indentLength = std::stoi(numberRes);
                 }
             }
         }
@@ -128,17 +127,16 @@ std::string Configuration::validTextColorCode(const c4::csubstr color)
 {
     const std::string keyTextColorString {std::string(color.str, color.len)};
     bool validColorCode {false};
-    if (keyTextColorString.size() <= 3 && !keyTextColorString.empty())
+    if (stringIsPositiveNum(keyTextColorString))
     {
-        validColorCode = true;
-        for (const char& number : keyTextColorString)
-        {
-            if (!std::isdigit(number))
-            {
-                validColorCode = false;
-                break;
-            }
-        }
+        if (const int number {std::stoi(keyTextColorString)};
+            number >= 0 && number <= 255) validColorCode = true;
     }
     return validColorCode ? "\033[1;38;5;" + keyTextColorString + 'm' : "";
+}
+
+
+bool Configuration::stringIsPositiveNum(const std::string& text)
+{
+    return std::all_of(text.begin(), text.end(), [](const char& digit) { return std::isdigit(digit); });
 }

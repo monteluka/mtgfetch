@@ -32,6 +32,8 @@ private:
     static std::string findConfigFile();
 
     static std::string validTextColorCode(c4::csubstr color);
+
+    static inline bool stringIsPositiveNum(const std::string& text);
 };
 
 

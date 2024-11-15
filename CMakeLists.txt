@@ -16,7 +16,7 @@ endif ()
 
 # set compile flags if building release
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_CXX_FLAGS "-O3 -s -DNDEBUG -flto=auto")
+    set(CMAKE_CXX_FLAGS "-Wall -O3 -s -DNDEBUG -flto=auto")
     message(STATUS "Running with the following compiler flags: ${CMAKE_CXX_FLAGS}")
 endif ()
 
