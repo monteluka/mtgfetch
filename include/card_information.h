@@ -18,9 +18,9 @@ void appendKeyVal(std::vector<std::string>& information,
                   const Configuration& configuration,
                   const int& depth);
 
-void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth);
+void fitValue(std::string& value, const unsigned int& terminalWidth, const int& keyWidth);
 
-inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const int& maxStringLength);
+inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const unsigned int& maxStringLength);
 
 void appendSequence(std::vector<std::string>& information,
                     const c4::yml::ConstNodeRef& seqNode,

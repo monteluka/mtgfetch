@@ -96,14 +96,14 @@ void appendKeyVal(std::vector<std::string>& information,
         : information.push_back(std::string(space, ' ') + val);
 }
 
-void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
+void fitValue(std::string& value, const unsigned int& terminalWidth, const int& keyWidth)
 {
     // the size of two small symbols put together is 40 characters wide and add 3 for spacing in between symbol & text
     // since this is the widest amount of space a symbol can be, we use it for the length
     constexpr int manaSymbolLength {43};
     // don't bother trying to fit anything if terminal is too small or if outputting to file
-    if (terminalWidth <= manaSymbolLength + keyWidth) return;
-    const int maxStringLength {terminalWidth - (manaSymbolLength + keyWidth)};
+    if (terminalWidth <= static_cast<unsigned int>(manaSymbolLength + keyWidth)) return;
+    const unsigned int maxStringLength {terminalWidth - (manaSymbolLength + keyWidth)};
 
     const size_t end {value.size()};
     size_t start {0};
@@ -123,7 +123,7 @@ void fitValue(std::string& value, const int& terminalWidth, const int& keyWidth)
     }
 }
 
-inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const int& maxStringLength)
+inline void addLineBreaks(std::string& value, size_t& start, const size_t& end, const unsigned int& maxStringLength)
 {
     // add a newline character at first space character found before maxStringLength
     while (end - start > maxStringLength)
@@ -319,12 +319,12 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
     std::unordered_set<std::string> keys {"uri", "png", "cmc", "usd"};
 
     // check for underscores
-    for (int i {1}; i < key.size(); ++i)
+    for (size_t i {1}; i < key.size(); ++i)
     {
         if (key[i] == '_')
         {
             key[i] = ' ';
-            if (const int nextLetter {++i}; nextLetter != key.size())
+            if (const size_t nextLetter {++i}; nextLetter != key.size())
             {
                 // if the next three letters are in keys then capitalize them
                 if (keys.find(key.substr(nextLetter, 3)) != keys.end())
