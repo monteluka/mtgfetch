@@ -372,26 +372,6 @@ std::string cleanKey(const c4::csubstr& keyCsubstr, const Configuration& configu
     return key;
 }
 
-std::string cleanValue(const c4::csubstr& valCsubstr, const Configuration& configuration)
-{
-    std::string val {valCsubstr.str, valCsubstr.len};
-
-    if (const size_t spacePos {val.find(' ')}; spacePos == std::string::npos && val.substr(0, 4) != "http")
-    {
-        val[0] = static_cast<char>(std::toupper(val[0]));
-        if (const size_t pos {val.find('_')}; pos != std::string::npos)
-        {
-            val[pos] = ' ';
-            if (const size_t newPos {pos + 1};
-                newPos < val.size()) val[newPos] = static_cast<char>(std::toupper(val[newPos]));
-        }
-    }
-
-    if (configuration.getColorEnabledOption()) addColorToText(val, configuration.getValTextColor());
-
-    return val;
-}
-
 std::string cleanValue(std::string& valStr, const Configuration& configuration)
 {
     if (const size_t spacePos {valStr.find(' ')}; spacePos == std::string::npos && valStr.substr(0, 4) != "http")
