@@ -9,17 +9,17 @@
 
 std::vector<std::string> getColorIdentity(const ryml::Tree& card);
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration);
+void loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration);
 
-bool addSingleSymbol(std::vector<std::string>& manaSymbol,
+void addSingleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,
                      std::vector<std::ifstream>::iterator& currentFile);
 
-bool addDoubleSymbol(std::vector<std::string>& manaSymbol,
+void addDoubleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,
                      std::vector<std::ifstream>::iterator& currentFile);
 
-bool addAllSymbols(std::vector<std::string>& manaSymbol,
+void addAllSymbols(std::vector<std::string>& manaSymbol,
                    const std::vector<std::ifstream>& files,
                    std::vector<std::ifstream>::iterator& firstFile);
 

@@ -11,7 +11,7 @@ std::vector<std::string> getColorIdentity(const ryml::Tree& card)
     return colorIdentity;
 }
 
-bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration)
+void loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& card, const Configuration& configuration)
 {
     std::vector<std::string> colorIdentity {getColorIdentity(card)};
 
@@ -47,27 +47,20 @@ bool loadManaSymbol(std::vector<std::string>& manaSymbol, const c4::yml::Tree& c
             if (asciiArt.is_open()) files.emplace_back(std::move(asciiArt));
             asciiArt.close();
         }
-        else
-        {
-            return false;
-        }
     }
 
-    if (std::vector<std::ifstream>::iterator firstFile {files.begin()}; !addAllSymbols(manaSymbol, files, firstFile))
-    {
-        return false;
-    }
-
-    return true;
+    std::vector<std::ifstream>::iterator firstFile {files.begin()};
+    addAllSymbols(manaSymbol, files, firstFile);
 }
 
-bool addSingleSymbol(std::vector<std::string>& manaSymbol,
+void addSingleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,
                      std::vector<std::ifstream>::iterator& currentFile)
 {
     if (currentFile == files.end())
     {
-        return false;
+        // nothing to add
+        return;
     }
 
     if (currentFile != files.begin())
@@ -86,17 +79,17 @@ bool addSingleSymbol(std::vector<std::string>& manaSymbol,
     }
 
     ++currentFile;
-    return true;
 }
 
-bool addDoubleSymbol(std::vector<std::string>& manaSymbol,
+void addDoubleSymbol(std::vector<std::string>& manaSymbol,
                      const std::vector<std::ifstream>& files,
                      std::vector<std::ifstream>::iterator& currentFile)
 {
     const std::vector<std::ifstream>::iterator nextFile {std::next(currentFile)};
     if (currentFile == files.end() || nextFile == files.end())
     {
-        return false;
+        // nothing to add
+        return;
     }
 
     std::string manaSymbol1 {};
@@ -117,52 +110,22 @@ bool addDoubleSymbol(std::vector<std::string>& manaSymbol,
         // files vector is not being modified at all
         currentFile = const_cast<std::vector<std::ifstream>&>(files).end();
     }
-
-    return true;
 }
 
-bool addAllSymbols(std::vector<std::string>& manaSymbol,
+void addAllSymbols(std::vector<std::string>& manaSymbol,
                    const std::vector<std::ifstream>& files,
                    std::vector<std::ifstream>::iterator& firstFile)
 {
     const int numberOfSymbols {static_cast<int>(files.size())};
 
-    // there are no symbols to display - error
-    if (numberOfSymbols == 0)
-    {
-        return false;
-    }
+    // there are no symbols to display
+    if (numberOfSymbols == 0) return;
 
-    // there is only one single symbol to display
-    if (numberOfSymbols == 1)
-    {
-        if (!addSingleSymbol(manaSymbol, files, firstFile))
-        {
-            return false;
-        }
-        // adding the single symbol was a success
-        return true;
-    }
-
-    // only get here if we have multiple symbols to add to the manaSymbol vector
+    // calculate the number of double pritns and single prints we need
     const int numberOfDoublePrints {numberOfSymbols / 2};
     const int numberOfSinglePrints {numberOfSymbols % 2};
 
-    for (int i {0}; i < numberOfDoublePrints; i++)
-    {
-        if (!addDoubleSymbol(manaSymbol, files, firstFile))
-        {
-            return false;
-        }
-    }
-
-    for (int i {0}; i < numberOfSinglePrints; i++)
-    {
-        if (!addSingleSymbol(manaSymbol, files, firstFile))
-        {
-            return false;
-        }
-    }
-
-    return true;
+    // add as many double symbols and single symbols that we need
+    for (int i {0}; i < numberOfDoublePrints; i++) addDoubleSymbol(manaSymbol, files, firstFile);
+    for (int i {0}; i < numberOfSinglePrints; i++) addSingleSymbol(manaSymbol, files, firstFile);
 }

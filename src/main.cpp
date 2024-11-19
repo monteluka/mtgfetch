@@ -227,7 +227,7 @@ int main(const int argc, char* argv[]) try
     std::vector<std::string> manaSymbol {};
 
     loadCardInfo(card, cardInformation, configuration);
-    if (!loadManaSymbol(manaSymbol, card, configuration)) throw std::runtime_error("Failed to load mana symbol");
+    loadManaSymbol(manaSymbol, card, configuration);
 
     const size_t largestBuffer {std::max(cardInformation.size(), manaSymbol.size())};
     const int fillerSpace {manaSymbol.size() == 19 ? 39 : 43};
